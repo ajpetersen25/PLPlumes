@@ -168,4 +168,4 @@ class imgio:
         """
         x = i%self.ix
         y = np.floor(i/self.ix)
-return x,y
+	return x,y
