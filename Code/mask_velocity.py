@@ -89,7 +89,7 @@ def main():
     #all_frame_masks,all_U,all_W = pool.map(mask_vframe,objList)
     all= pool.map(mask_vframe,objList)
     all = np.array(all)
-    print all.shape
+    #print all.shape
     mask_results = all[:,0,:,:]
     U_results = all[:,1,:,:]
     W_results = all[:,2,:,:]
