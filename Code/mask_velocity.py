@@ -96,7 +96,7 @@ def main():
     np.save(os.path.splitext(piv.file_name)[0]+'.mask.npy',mask_results)
     np.save(os.path.splitext(piv.file_name)[0]+'.U.npy',U_results)
     np.save(os.path.splitext(piv.file_name)[0]+'.W.npy',W_results)
-    print ' '
+    print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
    
 if __name__ == "__main__":
     main()
