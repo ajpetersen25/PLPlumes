@@ -93,9 +93,9 @@ def main():
     mask_results = all[:,0,:,:]
     U_results = all[:,1,:,:]
     W_results = all[:,2,:,:]
-    np.save(os.path.splitext(piv.file_name)[0]+'.mask.npy',mask_results)
-    np.save(os.path.splitext(piv.file_name)[0]+'.U.npy',U_results)
-    np.save(os.path.splitext(piv.file_name)[0]+'.W.npy',W_results)
+    np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.mask.npz',mask_results)
+    np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.U.npz',U_results)
+    np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.W.npz',W_results)
     print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
    
 if __name__ == "__main__":

@@ -48,8 +48,8 @@ def main():
         end_frame = np.load(args.piv_file[0]).shape[0]
         
     ave_mvel = average_masked(args.piv_file[0],args.mask_file[0],args.start_frame,end_frame)
-    np.save(os.path.splitext(args.piv_file[0])[0]+'.ave.npy',ave_mvel.data)
-    np.save(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npy',ave_mvel.mask) # saves mask which will work for all time-averaged fields
+    np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.ave.npz',ave_mvel.data)
+    np.savez_compressed(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npz',ave_mvel.mask) # saves mask which will work for all time-averaged fields
     print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
 
 if __name__ == "__main__":

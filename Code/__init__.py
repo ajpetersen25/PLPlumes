@@ -1,2 +1,2 @@
-from .io.imgio import imgio
-from .io.pivio import pivio
+from .pio.imgio import imgio
+from .pio.pivio import pivio

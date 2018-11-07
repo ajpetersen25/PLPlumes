@@ -19,8 +19,8 @@ def avg_profile_convergence(masked_vel, height):
     
     moving_avg = masked_vel[0][height,:].reshape(masked_vel[0][height,:].shape[0],1)
     rmse_series = np.zeros((masked_vel.shape[0]-1,))
-    for f in range(1,masked_vel.shape[0]):
-        prof = masked_vel[f][height,:].reshape(masked_vel[f][height,:].shape[0],1)
+    for f in range(1,masked_vel.shape[0]+1):
+        #prof = masked_vel[f][height,:].reshape(masked_vel[f][height,:].shape[0],1)
         #moving_avg_new = nma.sum(nma.concatenate((moving_avg*f,prof),axis=1),axis=1).reshape(prof.shape[0],1)/(f+1)
         #print moving_avg_new.shape, prof.shape
         #print prof.shape, convergence_series[:,f-1].shape
@@ -28,8 +28,7 @@ def avg_profile_convergence(masked_vel, height):
         #print prof_update.shape, convergence_series.shape
         #convergence_series = nma.concatenate((convergence_series,prof_update),axis=1)
         
-        moving_avg_new = nma.mean(masked_vel[0:f][height,:])
-        
+        moving_avg_new = nma.mean(masked_vel[0:f][:,height,:],axis=0)
         rmse =  np.sqrt(np.mean((moving_avg_new-moving_avg)**2))
         moving_avg = moving_avg_new
         rmse_series[f-1] = rmse
@@ -39,9 +38,9 @@ def rms_profile_convergence(masked_vel, height):
     
     moving_avg = masked_vel[0][height,:].reshape(masked_vel[0][height,:].shape[0],1)
     rmse_series = np.zeros((masked_vel.shape[0]-1,))
-    for f in range(1,masked_vel.shape[0]):
-        moving_avg_new = np.sqrt(nma.mean(masked_vel[0:f][height,:]**2))
-        rmse = np.sqrt(nma.mean((moving_avg_new-moving_avg)**2),axis=0)
+    for f in range(1,masked_vel.shape[0]+1):
+        moving_avg_new = np.sqrt(nma.mean(masked_vel[0:f][:,height,:]**2,axis=0))
+        rmse = np.sqrt(nma.mean((moving_avg_new-moving_avg)**2))
         moving_avg = moving_avg_new
         rmse_series[f-1] = rmse
     return rmse_series
@@ -55,37 +54,33 @@ def main():
              formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('piv', type=str, nargs=1,help=' path to PIV array (.npy)')
     parser.add_argument('vel_mask',type=str,nargs=1,help='path to mask file (.npy)')
-    parser.add_argument('flct_piv', type=str, nargs=?,help=' path to fluctuating PIV array (.npy)')
+    parser.add_argument('flct_piv', type=str, nargs='?',help=' path to fluctuating PIV array (.npy)')
     args = parser.parse_args()
     
+    heights = raw_input('Enter desired profile heights (separated by a space): ')
+    heights = [int(i) for i in heights.split(' ')]
+    
     if args.flct_piv is not None:
-        flct_vel = apply_mask.apply_mask(args.flct_piv[0],args.vel_mask[0])
+        flct_vel = apply_mask.apply_mask(args.flct_piv,args.vel_mask[0])
         
         masked_vel = apply_mask.apply_mask(args.piv[0],args.vel_mask[0])
         print '\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1])
-
-        heights = raw_input('Enter desired profile heights (separated by a space): ')
-        heights = [int(i) for i in heights.split(' ')]
 
 
         for h in heights:
             avg_prof_rmse = avg_profile_convergence(masked_vel,h)
             rms_prof_rmse = rms_profile_convergence(flct_vel,h)
-            np.save(os.path.splitext(args.piv[0])[0]+'_avg_converge_rmse_h%d.npy' %h,avg_prof_rmse)
-            np.save(os.path.splitext(args.piv[0])[0]+'_rms_converge_rmse_h%d.npy' %h,rms_prof_rmse)
+            np.savez_compressed(os.path.splitext(args.piv[0])[0]+'_avg_converge_rmse_h%d.npz' %h,avg_prof_rmse)
+            np.savez_compressed(os.path.splitext(args.piv[0])[0]+'_rms_converge_rmse_h%d.npz' %h,rms_prof_rmse)
             
     else:
         
         masked_vel = apply_mask.apply_mask(args.piv[0],args.vel_mask[0])
         print '\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1])
 
-        heights = raw_input('Enter desired profile heights (separated by a space): ')
-        heights = [int(i) for i in heights.split(' ')]
-
-
         for h in heights:
             avg_prof_rmse = avg_profile_convergence(masked_vel,h)
-            np.save(os.path.splitext(args.piv[0])[0]+'_avg_converge_rmse_h%d.npy' %h,avg_prof_rmse)
+            np.savez_compressed(os.path.splitext(args.piv[0])[0]+'_avg_converge_rmse_h%d.npz' %h,avg_prof_rmse)
     
     print 'calculated & saved convergence RMSE series'
     

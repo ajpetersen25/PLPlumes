@@ -63,7 +63,7 @@ def main():
 
     fluct_mvel = pool.map(fluct_masked,objList)
     results = np.array(fluct_mvel)
-    np.save(os.path.splitext(args.piv_file[0])[0]+'.flct.npy',results)
+    np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.flct.npz',results)
     print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
     
 if __name__ == "__main__":

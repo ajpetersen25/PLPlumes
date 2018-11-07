@@ -8,6 +8,7 @@ from apply_mask import apply_mask as am
 from avg_masked_vel import average_masked
 import argparse
 import os
+import time
 
 
 def rms_masked(piv_file,mask_file,start_frame,end_frame):
@@ -48,9 +49,9 @@ def main():
         end_frame = n
         
     rms_mvel = rms_masked(args.piv_file[0],args.mask_file[0],args.start_frame,end_frame)
-    np.save(os.path.splitext(args.piv_file[0])[0]+'.rms.npy',rms_mvel.data)
-    if os.path.exists(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npy') == 0:
-        np.save(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npy',rms_mvel.mask) # saves mask which will work for all time-averaged fields
+    np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.rms.npz',rms_mvel.data)
+    if os.path.exists(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npz') == 0:
+        np.savez_compressed(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npz',rms_mvel.mask) # saves mask which will work for all time-averaged fields
     print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
 if __name__ == "__main__":
     main()
