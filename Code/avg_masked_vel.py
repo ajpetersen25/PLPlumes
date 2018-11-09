@@ -4,7 +4,6 @@
 from __future__ import division
 import numpy as np
 import numpy.ma as nma
-import apply_mask
 import argparse
 from apply_mask import apply_mask as am
 import time
