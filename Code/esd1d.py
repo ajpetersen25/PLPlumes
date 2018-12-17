@@ -54,7 +54,12 @@ def esd1d(signal,freq,windows,overlap=0.5):
     f = freq/2*f
 
     # scale to force the integral of E(f) to equal the variance
-    E = E * np.var(signal) / np.trapz(E,f)
+    E2 = E * np.var(signal) / np.trapz(E,f)
+    
+    # Identify and remove values below the minimum frequency
+    fmin = freq/window_size
+    f[f>=fmin]
+    
     return np.concatenate((f.reshape(len(f),1),E2.reshape(len(E2),1)),axis=1)
     
     
