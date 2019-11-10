@@ -4,6 +4,7 @@ from matplotlib import cm
 from matplotlib import rc
 rc('text', usetex=True)
 import cv2
+import skimage.io
 import scipy.ndimage.measurements as measurements
 import os
 import glob
@@ -20,11 +21,14 @@ import time
 #     if filename.endswith(".asm") 
     
     
-     
-    
-def load_image(img_file):
+def load_image2(img_file):
     img_bgr = cv2.imread(img_file)
-    img = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2GRAY)
+    img = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2GRAY)     
+    return img
+
+def load_image(img_file):
+
+    img = skimage.io.imread(img_file,plugin='tifffile')
     return img
     
 def crop(img):
@@ -152,12 +156,12 @@ def check_threshold(im):
 
 def calc_stitch():
     cal_img = input('Enter path to right/top calibration image: ')
-    cal_img1 = load_image(cal_img)
+    cal_img1 = load_image2(cal_img)
     del cal_img
     cal1 = copy.deepcopy(cal_img1)
     threshold1 = check_threshold(cal1)
     cal_img = input('Enter path to left/bottom calibration image: ')
-    cal_img2 = load_image(cal_img)
+    cal_img2 = load_image2(cal_img)
     del cal_img
     cal2 = copy.deepcopy(cal_img2)
     threshold2 = check_threshold(cal2)
@@ -169,7 +173,7 @@ def calc_stitch():
     #### remove hardcoding ####
     pts=6
     img_shape_in_stack_dir = cal_img1.shape[1]
-    border=200
+    border=100
     pano_h = cal_img1.shape[0]+border
     pano_w = cal_img2.shape[1]*2
     ##############################################
@@ -182,31 +186,30 @@ def calc_stitch():
 def main():
     
     parser = argparse.ArgumentParser(description='Program to calculate stitching & blending transform and apply to input images', formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('top_cam_files',type=str,help = 'Input image files for top camera')
-    parser.add_argument('bottom_cam_files',type=str,help = 'Input image files for bottom camera')
-    parser.add_argument('save_path',type=str,help = 'directory in which to save panorama images')
-    parser.parse_args()
-    
-    T,alphas,border = calc_stitch()
+    parser.add_argument('-t','--top_cam_files',type=str,nargs='+',help = 'Input image files for top camera')
+    parser.add_argument('-b','--bottom_cam_files',type=str,nargs='+',help = 'Input image files for bottom camera')
+    parser.add_argument('-s','--save_path',type=str,nargs=1,help = 'directory in which to save panorama images')
+    args = parser.parse_args()
 
+    T,alphas,border = calc_stitch()
     if len(args.top_cam_files)==1:
-        top_list = glob.glob(args.top_cam_files[0])
+        top_list = args.top_cam_files
         top_list.sort()
     else:
         top_list = args.top_cam_files
     if len(args.bottom_cam_files)==1:
-        bottom_list = glob.glob(args.bottom_cam_files[0])
+        bottom_list = args.bottom_cam_files
         bottom_list.sort()
     else:
         bottom_list = args.bottom_cam_files
-        
+
     d = time.time()
     for i in range(0,len(top_list)):
         c1 = load_image(top_list[i])
         c2 = load_image(bottom_list[i])
         panorama = create_pano(c2,c1,alphas[1],alphas[0],T,border)
-        cv2.imwrie(args.save_path+'pano_%d.tif' %i,panorama)
-
+        #cv2.imwrite(args.save_path[0]+'pano_%d.tif' %i,panorama)
+        skimage.io.imsave(args.save_path[0]+'pano_%d.tif' %i, panorama, plugin='tifffile')
     print('Finished in %0.3f s' %(time.time()-d))
 if __name__ == "__main__":
     main()   
