@@ -8,13 +8,13 @@ from pio import load_npz
 
 
 def apply_mask(piv_str,mask_str):
-    piv_arr = np.load(piv_str)
-    mask_arr = np.load(mask_str)
+    piv_arr = np.load(piv_str)['arr_0']
+    mask_arr = np.load(mask_str)['arr_0']
     masked_vel = nma.masked_array(piv_arr,mask=mask_arr)
     return masked_vel
 
 def apply_maskz(piv_npz, mask_npz):
-    piv_arr = load_npz.load_npz(piv_str)
-    mask_arr = load_npz.load_npz(mask_str)
+    piv_arr = load_npz.load_npz(piv_npz)
+    mask_arr = load_npz.load_npz(mask_npz)
     masked_vel = nma.masked_array(piv_arr,mask=mask_arr)
     return masked_vel
