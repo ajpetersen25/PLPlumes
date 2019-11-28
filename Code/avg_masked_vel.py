@@ -44,7 +44,8 @@ def main():
         print 'exiting...'
         os.sys.exit(1)
     if args.end_frame == 0:
-        end_frame = np.load(args.piv_file[0]).shape[0]
+        temp = np.load(args.piv_file[0])
+        end_frame = temp['arr_0'].shape[0]
         
     ave_mvel = average_masked(args.piv_file[0],args.mask_file[0],args.start_frame,end_frame)
     np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.ave.npz',ave_mvel.data)

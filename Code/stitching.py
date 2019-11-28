@@ -1,8 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib import rc
-rc('text', usetex=True)
 import cv2
 import skimage.io
 import scipy.ndimage.measurements as measurements
@@ -11,6 +8,7 @@ import glob
 import copy
 import argparse
 import time
+from PIL import Image
 
 
 
@@ -119,9 +117,9 @@ def create_pano(img1,img2,alpha1,alpha2,T,border=200):
     panorama1 = np.zeros((height_panorama,width_panorama))
     panorama1[int(border/2):height_panorama-int(border/2), img1.shape[1]:] = img1
     ii2 = np.zeros((img2.shape[0]+border,img2.shape[1]))
-    ii2[100:ii2.shape[0]-int(border/2),:] = img2
+    ii2[int(border/2):ii2.shape[0]-int(border/2),:] = img2
     panorama2 = cv2.warpPerspective(ii2, T, (width_panorama, height_panorama))
-    return (alpha2*panorama2+(1-alpha1)*panorama1)
+    return np.floor(alpha2*panorama2+(1-alpha1)*panorama1)
 
 def check_threshold(im):
     good = 0
@@ -154,62 +152,87 @@ def check_threshold(im):
     plt.close()
     return t
 
-def calc_stitch():
-    cal_img = input('Enter path to right/top calibration image: ')
-    cal_img1 = load_image2(cal_img)
-    del cal_img
-    cal1 = copy.deepcopy(cal_img1)
-    threshold1 = check_threshold(cal1)
-    cal_img = input('Enter path to left/bottom calibration image: ')
-    cal_img2 = load_image2(cal_img)
-    del cal_img
-    cal2 = copy.deepcopy(cal_img2)
-    threshold2 = check_threshold(cal2)
-    imCrop1,r1 = crop(cal_img1)
-    imCrop2,r2 = crop(cal_img2)
-    cal_points1 = find_points(imCrop1,threshold1,min_size=9)
-    cal_points2 = find_points(imCrop2,threshold2,min_size=9)
-    del cal1,cal2
-    #### remove hardcoding ####
-    pts=6
-    img_shape_in_stack_dir = cal_img1.shape[1]
-    border=100
-    pano_h = cal_img1.shape[0]+border
-    pano_w = cal_img2.shape[1]*2
-    ##############################################
-    x1 = pick_shared_pts(imCrop1,cal_points1,pts) + np.array([r1[0],r1[1]])
-    x2 = pick_shared_pts(imCrop2,cal_points2,pts) + np.array([r2[0],r2[1]])
-    T = translation_matrix(x1,x2,pts,img_shape_in_stack_dir)
-    alpha1,alpha2 = create_alpha(pano_h,pano_w,img_shape_in_stack_dir,T,border)
+def calc_stitch(T=None):
+
+    if T is None:
+        cal_img = input('Enter path to right/top calibration image: ')
+        cal_img1 = load_image2(cal_img)
+        del cal_img
+        #### remove hardcoding ####
+        pts=6
+        img_shape_in_stack_dir = cal_img1.shape[1]
+        border=100
+        pano_h = cal_img1.shape[0]+border
+        pano_w = cal_img1.shape[1]*2
+        ##############################################
+        cal1 = copy.deepcopy(cal_img1)
+        threshold1 = check_threshold(cal1)
+        cal_img = input('Enter path to left/bottom calibration image: ')
+        cal_img2 = load_image2(cal_img)
+        del cal_img
+        cal2 = copy.deepcopy(cal_img2)
+        threshold2 = check_threshold(cal2)
+        imCrop1,r1 = crop(cal_img1)
+        imCrop2,r2 = crop(cal_img2)
+        cal_points1 = find_points(imCrop1,threshold1,min_size=9)
+        cal_points2 = find_points(imCrop2,threshold2,min_size=9)
+        del cal1,cal2
+        x1 = pick_shared_pts(imCrop1,cal_points1,pts) + np.array([r1[0],r1[1]])
+        x2 = pick_shared_pts(imCrop2,cal_points2,pts) + np.array([r2[0],r2[1]])
+        T = translation_matrix(x1,x2,pts,img_shape_in_stack_dir)
+        alpha1,alpha2 = create_alpha(pano_h,pano_w,img_shape_in_stack_dir,T,border)
+
+    else:
+        cal_img = cal_img = input('Enter path to a single example image: ')
+        cal_img1 = load_image(cal_img)
+        del cal_img
+        #### remove hardcoding ####
+        img_shape_in_stack_dir = cal_img1.shape[1]
+        border=0
+        pano_h = cal_img1.shape[0]+border
+        pano_w = cal_img1.shape[1]*2
+        ##############################################
+        alpha1,alpha2 = create_alpha(pano_h,pano_w,img_shape_in_stack_dir,T,border)
+        
     return T, (alpha1,alpha2), border
 
 def main():
     
     parser = argparse.ArgumentParser(description='Program to calculate stitching & blending transform and apply to input images', formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-t','--top_cam_files',type=str,nargs='+',help = 'Input image files for top camera')
-    parser.add_argument('-b','--bottom_cam_files',type=str,nargs='+',help = 'Input image files for bottom camera')
+    parser.add_argument('-l','--top_cam',type=str,nargs='+',help = 'Input path to image files for top camera')
+    parser.add_argument('-r','--bottom_cam',type=str,nargs='+',help = 'Input path to image files for bottom camera')
     parser.add_argument('-s','--save_path',type=str,nargs=1,help = 'directory in which to save panorama images')
+    parser.add_argument('-t','--transform', type=str,nargs=1,help = 'path to transform matrix .txt file')
     args = parser.parse_args()
-
-    T,alphas,border = calc_stitch()
-    if len(args.top_cam_files)==1:
-        top_list = args.top_cam_files
+    if len(args.transform)==0:
+        T,alphas,border = calc_stitch()
+        np.savetxt(args.save_path[0]+'T_matrix.txt',T)
+        #np.savetxt(args.save_path[0]+'alpha_matrix.txt',alphas)
+    else:
+        T = np.loadtxt(args.transform[0])
+        T,alphas,border = calc_stitch(T) 
+    top_cam_files = glob.glob(args.top_cam[0]+'*.tif')
+    bottom_cam_files = glob.glob(args.bottom_cam[0]+'*.tif')
+    
+    if len(top_cam_files)!=1:
+        top_list = top_cam_files
         top_list.sort()
     else:
         top_list = args.top_cam_files
-    if len(args.bottom_cam_files)==1:
-        bottom_list = args.bottom_cam_files
+    if len(bottom_cam_files)!=1:
+        bottom_list = bottom_cam_files
         bottom_list.sort()
     else:
-        bottom_list = args.bottom_cam_files
+        bottom_list = bottom_cam_files
 
     d = time.time()
     for i in range(0,len(top_list)):
         c1 = load_image(top_list[i])
         c2 = load_image(bottom_list[i])
         panorama = create_pano(c2,c1,alphas[1],alphas[0],T,border)
-        #cv2.imwrite(args.save_path[0]+'pano_%d.tif' %i,panorama)
-        skimage.io.imsave(args.save_path[0]+'pano_%d.tif' %i, panorama, plugin='tifffile')
+        panorama = panorama.astype('uint16')
+        #cv2.imwrite(args.save_path[0]+'pano_%06d.tif' %i,panorama)
+        skimage.io.imsave(args.save_path[0]+'pano_%06d.tiff' %i, panorama, plugin='tifffile')
     print('Finished in %0.3f s' %(time.time()-d))
 if __name__ == "__main__":
     main()   

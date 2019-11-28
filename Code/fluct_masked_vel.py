@@ -1,3 +1,4 @@
+# %load fluct_masked_vel
 # takes in masked numpy arrays and the fluctuating component
 # save final fluctuating array as a separate .npy file
 
@@ -10,13 +11,14 @@ import psutil
 from itertools import repeat
 import argparse
 import os, sys
+from apply_mask import apply_mask as am
 import time
 
 
 def fluct_masked(params):
     piv,ave_mvel,frame = params
     if isinstance(piv, basestring):
-        piv = np.load(piv)
+        piv = np.load(piv)['arr_0']
     fluct_frame = piv[frame,:,:] - ave_mvel.data
     return fluct_frame
     
@@ -32,6 +34,7 @@ def main():
     parser.add_argument('mask_file',type=str,nargs=1,help='Path to masking .npy file')
     parser.add_argument('start_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to start the masking at')
     parser.add_argument('end_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to end the masking at')
+    parser.add_argument('ncores',type=int,nargs='?',default=0,help='number of cores used, default = 3/4 cores on computer ')
     args = parser.parse_args() 
     
     fail = False
@@ -44,11 +47,15 @@ def main():
         print 'exiting...'
         os.sys.exit(1)
     if args.end_frame == 0:
-        end_frame = piv.shape[0]
+        temp = np.load(args.piv_file[0])
+        end_frame = temp['arr_0'].shape[0]
     tic = time.time()
     ave_mvel = average_masked(args.piv_file[0],args.mask_file[0],args.start_frame,args.end_frame)
     # start up parallel pool
-    avail_cores = int(psutil.cpu_count() - (psutil.cpu_count()/2))
+    if args.ncores==0:
+        avail_cores = int(psutil.cpu_count() - (psutil.cpu_count()/2))
+    else:
+        avail_cores = args.ncores
 
     param1 = args.piv_file[0]
     param2 = ave_mvel

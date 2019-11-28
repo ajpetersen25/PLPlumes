@@ -19,7 +19,8 @@ def rms_masked(piv_file,mask_file,start_frame,end_frame):
     Output:
       rms_mvel  --array: masked numpy array"""
     masked_vel = am(piv_file,mask_file)
-    rms_mvel = np.sqrt(nma.mean(masked_vel[start_frame:end_frame,:,:]**2,axis=0))
+    avg_vel = nma.mean(masked_vel[start_frame:end_frame,:,:],axis=0)
+    rms_mvel = np.sqrt(nma.mean((masked_vel[start_frame:end_frame,:,:]-avg_vel)**2,axis=0))
     return rms_mvel
 
 def main():
@@ -35,7 +36,6 @@ def main():
     parser.add_argument('start_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to start the masking at')
     parser.add_argument('end_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to end the masking at')
     args = parser.parse_args() 
-    n = np.load(args.piv_file[0]).shape[0]
     fail = False
     # check if IMG file exists
     if os.path.exists(args.mask_file[0]) == 0 or os.path.exists(args.piv_file[0])==0:
@@ -46,7 +46,8 @@ def main():
         print 'exiting...'
         os.sys.exit(1)
     if args.end_frame == 0:
-        end_frame = n
+        temp = np.load(args.piv_file[0])
+        end_frame = temp['arr_0'].shape[0]
         
     rms_mvel = rms_masked(args.piv_file[0],args.mask_file[0],args.start_frame,end_frame)
     np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.rms.npz',rms_mvel.data)

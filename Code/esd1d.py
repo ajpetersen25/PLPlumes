@@ -42,7 +42,7 @@ def esd1d(signal,freq,windows,overlap=0.5):
             s = signal[ii]                # fluctuations in the current window
             s = s*W                         # window filter in the domain
             s_hat = np.fft.fft(s,nfft)    # zero-padded fft
-            R_hat[:,i] = np.abs(s_hat)**2# autocovariance transform
+            R_hat[:,i] = np.abs(s_hat)**2 # autocovariance transform
             ii = ii + on
     # average R_hat from each window
     R_hat = np.nanmean(R_hat,axis=1)
@@ -58,7 +58,8 @@ def esd1d(signal,freq,windows,overlap=0.5):
     
     # Identify and remove values below the minimum frequency
     fmin = freq/window_size
-    f[f>=fmin]
+    E2=E2[f>=fmin]
+    f=f[f>=fmin]
     
     return np.concatenate((f.reshape(len(f),1),E2.reshape(len(E2),1)),axis=1)
     
