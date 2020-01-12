@@ -90,3 +90,4 @@ test = image.read_frame2d(4000).astype('float')
 ctest = np.zeros(test.shape)
 for i in range(1,len(cmap_bins)):
     ctest[:,cmap_bins[i-1]-1:cmap_bins[i]+1] = test[:,cmap_bins[i-1]-1:cmap_bins[i]+1]*alphas[i-1]
+    
