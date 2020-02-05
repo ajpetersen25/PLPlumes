@@ -138,7 +138,6 @@ def main():
     args = parser.parse_args()
     
     img_files = args.path_to_image_files#glob.glob(args.path_to_image_files)   
-    print(img_files)
     save_list = [splitext(e)[0] +'_tracers' +splitext(e)[1] for e in img_files]
     
     param2 = args.labeling_threshold
