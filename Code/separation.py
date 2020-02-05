@@ -124,20 +124,21 @@ def separation_alg(frame,labeling_threshold, particle_threshold,min_size,particl
     return tracers
 
 def main():
-    
+    tic = time.time()
     parser= argparse.ArgumentParser(description='Program to separate .img file into particle and tracer img files', formatter_class=argparse.RawTextHelpFormatter)    
-    parser.add_argument('path_to_image_files',nargs='+', help='Input image files (can use *.file_type)')    
     parser.add_argument('labeling_threshold', type=int, help='Noise intensity threshold')
     parser.add_argument('particle_threshold', type=int, help='Particle intensity threshold' )    
     parser.add_argument('min_size', type=int, help='Particle radius threshold (pixels)')
     parser.add_argument('particle_flare',nargs='?',default=0,type=bool, help='Set to 1 if particles flare/increase local background intensity. (uses a larger kernel for dilation')
     parser.add_argument('window_size',nargs='?',default=50,type=int,help='window size for calculating local meand & std for noise filling')
     parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for separate_frames')
+    parser.add_argument('path_to_image_files',nargs='+', help='Input image files (can use *.file_type)')   
     #TODO
     #parser.add_argument('auto_threshold',nargs='?', default='False',help='If true, labeling threshold chosen automatically based on histogram')
     args = parser.parse_args()
     
-    img_files = glob.glob(args.path_to_image_files)   
+    img_files = args.path_to_image_files#glob.glob(args.path_to_image_files)   
+    print(img_files)
     save_list = [splitext(e)[0] +'_tracers' +splitext(e)[1] for e in img_files]
     
     param2 = args.labeling_threshold
@@ -157,7 +158,7 @@ def main():
     pool = multiprocessing.Pool(processes=args.cores)
     
     # process
-    tic = time.time()
+    
     #all_frame_masks,all_U,all_W = pool.map(mask_vframe,objList)
     pool.map(separate_frames,objList)
 
