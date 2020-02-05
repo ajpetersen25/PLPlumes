@@ -126,7 +126,7 @@ def separation_alg(frame,labeling_threshold, particle_threshold,min_size,particl
 def main():
     
     parser= argparse.ArgumentParser(description='Program to separate .img file into particle and tracer img files', formatter_class=argparse.RawTextHelpFormatter)    
-    parser.add_argument('path_to_image_files', type=list,nargs='+', help='Input image files (can use *.file_type)')    
+    parser.add_argument('path_to_image_files',nargs='+', help='Input image files (can use *.file_type)')    
     parser.add_argument('labeling_threshold', type=int, help='Noise intensity threshold')
     parser.add_argument('particle_threshold', type=int, help='Particle intensity threshold' )    
     parser.add_argument('min_size', type=int, help='Particle radius threshold (pixels)')
@@ -137,7 +137,7 @@ def main():
     #parser.add_argument('auto_threshold',nargs='?', default='False',help='If true, labeling threshold chosen automatically based on histogram')
     args = parser.parse_args()
     
-    img_files = glob.glob(args.img_file)   
+    img_files = glob.glob(args.path_to_image_files)   
     save_list = [splitext(e)[0] +'_tracers' +splitext(e)[1] for e in img_files]
     
     param2 = args.labeling_threshold
