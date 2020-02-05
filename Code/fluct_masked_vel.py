@@ -2,22 +2,22 @@
 # takes in masked numpy arrays and the fluctuating component
 # save final fluctuating array as a separate .npy file
 
-from __future__ import division
+
 import numpy as np
 import numpy.ma as nma
-from avg_masked_vel import average_masked
+from .avg_masked_vel import average_masked
 import multiprocessing
 import psutil
 from itertools import repeat
 import argparse
 import os, sys
-from apply_mask import apply_mask as am
+from .apply_mask import apply_mask as am
 import time
 
 
 def fluct_masked(params):
     piv,ave_mvel,frame = params
-    if isinstance(piv, basestring):
+    if isinstance(piv, str):
         piv = np.load(piv)['arr_0']
     fluct_frame = piv[frame,:,:] - ave_mvel.data
     return fluct_frame
@@ -40,11 +40,11 @@ def main():
     fail = False
     # check if IMG file exists
     if os.path.exists(args.mask_file[0]) == 0 or os.path.exists(args.piv_file[0])==0:
-        print '[ERROR] file does not exist'
+        print('[ERROR] file does not exist')
         fail = True
     piv = np.load(args.piv_file[0])
     if fail:
-        print 'exiting...'
+        print('exiting...')
         os.sys.exit(1)
     if args.end_frame == 0:
         temp = np.load(args.piv_file[0])
@@ -59,11 +59,11 @@ def main():
 
     param1 = args.piv_file[0]
     param2 = ave_mvel
-    param3 = range(args.start_frame,end_frame)
+    param3 = list(range(args.start_frame,end_frame))
     f_tot = len(param3)
-    objList = zip(repeat(param1,times=f_tot),
+    objList = list(zip(repeat(param1,times=f_tot),
                   repeat(param2,times=f_tot),
-                  param3)
+                  param3))
     pool = multiprocessing.Pool(processes=avail_cores)
     
     # process
@@ -71,7 +71,7 @@ def main():
     fluct_mvel = pool.map(fluct_masked,objList)
     results = np.array(fluct_mvel)
     np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.flct.npz',results)
-    print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
+    print('[FINISHED]: %f seconds elapsed' %(time.time()-tic))
     
 if __name__ == "__main__":
     main()

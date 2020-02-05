@@ -1,10 +1,10 @@
 # code to load in velocity & mask and apply as a NumPy masked array
 # (necessary until numpy.ma.MaskedArray.tofile is implemented)
 
-from __future__ import division
+
 import numpy as np
 import numpy.ma as nma
-from pio import load_npz
+from .pio import load_npz
 
 
 def apply_mask(piv_str,mask_str):

@@ -1,16 +1,13 @@
-from __future__ import division
 import numpy as np
-from pio import pivio
-from pio import imgio
+from .pio import pivio
+from .pio import imgio
 import os,sys
 import copy
 import multiprocessing
 import psutil
 from itertools import repeat
-import warnings
 import time
 import argparse
-import getpass
 
 # Creates mask arrays for sparse PIV fields (like in the case of particle plumes) where many interrogation windows
 # capture nothing but noise since they are not centered on any part of the plume.
@@ -56,7 +53,7 @@ def main():
     fail = False
     # check if IMG file exists
     if os.path.exists(args.img_file[0]) == 0 or os.path.exists(args.piv_file[0])==0:
-        print '[ERROR] file does not exist'
+        print('[ERROR] file does not exist')
         fail = True
         
     piv_root, piv_ext = os.path.splitext(args.piv_file[0])
@@ -64,7 +61,7 @@ def main():
     img = imgio.imgio(args.img_file[0])
     
     if fail:
-        print 'exiting...'
+        print('exiting...')
         os.sys.exit(1)
     if args.end_frame == 0:
         end_frame = piv.nt
@@ -75,13 +72,13 @@ def main():
     param2 = piv
     param3 = args.threshold
     param4 = args.window_threshold
-    param5 = range(args.start_frame,end_frame)
+    param5 = list(range(args.start_frame,end_frame))
     f_tot = len(param5)
-    objList = zip(repeat(param1,times=f_tot),
+    objList = list(zip(repeat(param1,times=f_tot),
                   repeat(param2,times=f_tot),
                   repeat(param3,times=f_tot),
                   repeat(param4,times=f_tot),
-                  param5)
+                  param5))
     pool = multiprocessing.Pool(processes=avail_cores)
 
     # process
@@ -96,7 +93,7 @@ def main():
     np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.mask.npz',mask_results)
     np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.U.npz',U_results)
     np.savez_compressed(os.path.splitext(piv.file_name)[0]+'.W.npz',W_results)
-    print '[FINISHED]: %f seconds elapsed' %(time.time()-tic)
+    print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
    
 if __name__ == "__main__":
     main()

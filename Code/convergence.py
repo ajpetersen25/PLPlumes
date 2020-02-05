@@ -3,13 +3,12 @@
 # horizontal (x) direction, and t is the number of piv frames available. Each element is then the average
 # velocity for that x & z position up to that moment t in time.
 
-from __future__ import division
+
 import numpy as np
-from pio import pivio
 import argparse
 import numpy.ma as nma
 import os
-import apply_mask
+from . import apply_mask
 
 
 def avg_profile_convergence(masked_vel, height):
@@ -57,14 +56,14 @@ def main():
     parser.add_argument('flct_piv', type=str, nargs='?',help=' path to fluctuating PIV array (.npy)')
     args = parser.parse_args()
     
-    heights = raw_input('Enter desired profile heights (separated by a space): ')
+    heights = input('Enter desired profile heights (separated by a space): ')
     heights = [int(i) for i in heights.split(' ')]
     
     if args.flct_piv is not None:
         flct_vel = apply_mask.apply_mask(args.flct_piv,args.vel_mask[0])
         
         masked_vel = apply_mask.apply_mask(args.piv[0],args.vel_mask[0])
-        print '\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1])
+        print('\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1]))
 
 
         for h in heights:
@@ -76,13 +75,13 @@ def main():
     else:
         
         masked_vel = apply_mask.apply_mask(args.piv[0],args.vel_mask[0])
-        print '\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1])
+        print('\n PIV frame height is %d windows\n\n' %(masked_vel.shape[1]))
 
         for h in heights:
             avg_prof_rmse = avg_profile_convergence(masked_vel,h)
             np.savez_compressed(os.path.splitext(args.piv[0])[0]+'_avg_converge_rmse_h%d.npz' %h,avg_prof_rmse)
     
-    print 'calculated & saved convergence RMSE series'
+    print('calculated & saved convergence RMSE series')
     
     
     
