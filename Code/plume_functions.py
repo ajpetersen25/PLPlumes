@@ -5,6 +5,7 @@ from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter
 import cv2
 import skimage.io
+from skimage.util import img_as_uint
 from scipy import stats
 
 def nextpow2(i):
@@ -82,7 +83,7 @@ def load_tif(img_file):
     return img
 
 def write_tif(name,array):
-    skimage.io.imsave(name,array,plugin='tifffile')
+    skimage.io.imsave(name,img_as_uint(array),plugin='tifffile')
 
 
 def windowed_average(a, kernel_size, mode='same'):
