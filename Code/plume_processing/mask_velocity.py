@@ -1,6 +1,6 @@
 import numpy as np
-from .pio import pivio
-from .pio import imgio
+#from .pio import pivio
+from Code.pio import imgio
 import os,sys
 import copy
 import multiprocessing
