@@ -5,6 +5,8 @@ __pycache__/
 *~
 \#*\#
 /Analysis/test/*
+*.bak
+*.pyc
 # C extensions
 *.so
 
