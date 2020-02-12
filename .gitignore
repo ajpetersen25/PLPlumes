@@ -6,6 +6,9 @@ __pycache__/
 \#*\#
 /Analysis/test/*
 *.bak
+/Code/pio/*.bak
+/Code/preprocessing/*.bak
+/Code/plume_processing/*.bak
 *.pyc
 # C extensions
 *.so
