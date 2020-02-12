@@ -4,8 +4,6 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter
 import cv2
-import skimage.io
-from skimage.util import img_as_uint
 from scipy import stats
 
 def nextpow2(i):
@@ -70,20 +68,6 @@ def esd1d(signal, freq, windows, overlap=0.5):
     f = f[f >= fmin]
 
     return np.concatenate((f.reshape(len(f), 1), E2.reshape(len(E2), 1)), axis=1)
-
-
-def load_image(img_file):
-    img_bgr = cv2.imread(img_file)
-    img = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2GRAY)
-    return img
-
-def load_tif(img_file):
-
-    img = skimage.io.imread(img_file,plugin='tifffile')
-    return img
-
-def write_tif(name,array):
-    skimage.io.imsave(name,img_as_uint(array),plugin='tifffile')
 
 
 def windowed_average(a, kernel_size, mode='same'):

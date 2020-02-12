@@ -16,13 +16,12 @@ from numba import cfunc, carray
 from numba.types import intc, CPointer, float64, intp, voidptr
 from scipy import LowLevelCallable
 
-from Code.plume_processing.plume_functions import load_tif, write_tif
+from Code.io.image_io import load_tif, write_tif
 
 import multiprocessing
 from itertools import repeat
 import time
 import argparse
-import glob
 
 from os.path import splitext
 

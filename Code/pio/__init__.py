@@ -1,1 +1,1 @@
-__all__ = ["imgio","join_images","load_npz"]
+__all__ = ["imgio","join_images","image_io"]
