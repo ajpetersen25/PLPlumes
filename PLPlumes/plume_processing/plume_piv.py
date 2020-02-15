@@ -62,10 +62,8 @@ def plume_piv(params):
     mask=mask+mask_s2n
     u, v = replace_outliers( u, v, method=settings.filter_method, max_iter=settings.max_filter_iteration, 
                                     kernel_size=settings.filter_kernel_size)
-    print(u.shape)
-    print(os.path.join(settings.save_path,os.path.splitext(os.path.basename(frame_a))[0]+'.txt'))
-    save(x, y, u, v,sig2noise_ratio, mask ,os.path.join(settings.save_path, 
-                                                        os.path.splitext(os.path.basename(f1))[0]+'_piv.txt'), delimiter='\t')
+    save_file = os.path.join(settings.save_path,os.path.splitext(os.path.basename(f1))[0]+'_piv.txt')
+    save(x, y, u, v,mask,save_file, delimiter='\t')
     
 def main():
     tic = time.time()
@@ -89,7 +87,7 @@ def main():
     settings.extract_sig2noise = True 
     settings.sig2noise_method = 'peak2peak'
     settings.sig2noise_mask = 2
-    settings.sig2noise_threshold = 1
+    settings.sig2noise_threshold = 1.01
     settings.MinMax_U_disp = (-200,300)
     settings.MinMax_V_disp = (-200,200)
     settings.median_threshold = 2
@@ -127,7 +125,6 @@ def main():
     #settings.scaling_factor
     settings.save_path = args.save_path"""
     
-    print(settings.save_path)
     piv_imgs = []
     for i in range(1,len(img_files)):
         piv_imgs.append(img_files[i-1])
