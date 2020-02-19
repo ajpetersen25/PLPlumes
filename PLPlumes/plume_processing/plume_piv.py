@@ -94,14 +94,14 @@ def main():
     settings.extract_sig2noise = True 
     settings.sig2noise_method = 'peak2peak'
     settings.sig2noise_mask = 2
-    settings.sig2noise_threshold = 1.01
+    settings.sig2noise_threshold = 1.0
     settings.MinMax_U_disp = (-50,100)
     settings.MinMax_V_disp = (-50,50)
     settings.median_threshold = 2
     settings.median_size = 3
     settings.filter_method = 'localmean'
     settings.max_filter_iteration = 3
-    settings.filter_kernel_size = 3
+    settings.filter_kernel_size = 2
     settings.std_threshold = 10
     settings.interpolation_order= 3
     #settings.dt = (1/600)

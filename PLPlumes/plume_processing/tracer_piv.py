@@ -87,15 +87,15 @@ def main():
     img_files.sort()
     # Settings
     settings = Settings()
-    settings.window_sizes = (128,64,32)
-    settings.overlap = (64,32,16)
+    settings.window_sizes = (192,96,48)
+    settings.overlap = (96,48,24)
     settings.iterations = 3
     settings.correlation_method = 'circular'
     settings.subpixel_method = 'gaussian'
     settings.extract_sig2noise = True 
     settings.sig2noise_method = 'peak2peak'
     settings.sig2noise_mask = 2
-    settings.sig2noise_threshold = 1.01
+    settings.sig2noise_threshold = 1.0
     settings.MinMax_U_disp = (-50,50)
     settings.MinMax_V_disp = (-50,50)
     settings.median_threshold = 2

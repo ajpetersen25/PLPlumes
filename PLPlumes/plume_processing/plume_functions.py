@@ -3,6 +3,8 @@ from scipy.signal import convolve
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter
+from scipy.ndimage import median_filter
+from skimage.morphology import dilation
 import cv2
 from scipy import stats
 
@@ -103,7 +105,7 @@ def convert_I_to_C(image,alphas,smoothing_kernel):
     return image*gaussian_filter(alphas,sigma=smoothing_kernel)
 
 
-def plume_outline(frame,kernel):
+def plume_outline(frame,kernel,dilation_iterations,threshold,med_filt_size):
     """
     img_outline = frame>threshold
     contours, hierarchy =   cv2.findContours(img_outline.copy().astype('uint8'),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
@@ -112,8 +114,17 @@ def plume_outline(frame,kernel):
     plume_contour = cv2.drawContours(image,contours[lc],-1, 255, 1)
 
     return plume_contour"""
+    frame_d = frame.copy()
+    i=1
+    while i<dilation_iterations:
+        frame_d = dilation(frame_d,kernel)
+        i+=1
+    frame_db = frame_d > threshold
+    frame_mask = median_filter(frame_db,med_filt_size)
+    plume_outline_pts = []
     for col in range(0,frame.shape[1]):
-        cross = windowed_average((frame,kernel))
+        rows = np.where(np.diff(frame_db)==1)[0]
+        plume_outline_pts.append([np.array([row,col]) for row in rows])
 
 def gaussian_plume_width():
     """ based on the near half of the plume image, fit a gaussian"""
