@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Sun Feb 16 14:01:20 2020
+
+@author: alec
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Wed Feb 12 19:09:27 2020
 
 @author: alec
@@ -73,21 +81,14 @@ def main():
                formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('save_path',type=str,nargs=1,help='path to directory you want to save piv files')
     parser.add_argument('cores',type=int,nargs=1,default=1,help='number of cores to use')
-    parser.add_argument('start_frame',type=int,nargs='?',default=0,help='image you want to start PIV at')
-    parser.add_argument('end_frame',type=int,nargs='?',default=0,help='image you want to end PIV at')
     parser.add_argument('files', nargs='+', help='Name of files as inputs')
     args = parser.parse_args()
     img_files = args.files#glob.glob(args.path_to_image_files)   
     img_files.sort()
-    
-    if args.end_frame == 0:
-        end_frame = len(img_files)-1
-    else:
-        end_frame = args.end_frame[0]
     # Settings
     settings = Settings()
-    settings.window_sizes = (256,128,64)
-    settings.overlap = (128,64,32)
+    settings.window_sizes = (128,64,32)
+    settings.overlap = (64,32,16)
     settings.iterations = 3
     settings.correlation_method = 'circular'
     settings.subpixel_method = 'gaussian'
@@ -95,7 +96,7 @@ def main():
     settings.sig2noise_method = 'peak2peak'
     settings.sig2noise_mask = 2
     settings.sig2noise_threshold = 1.01
-    settings.MinMax_U_disp = (-50,100)
+    settings.MinMax_U_disp = (-50,50)
     settings.MinMax_V_disp = (-50,50)
     settings.median_threshold = 2
     settings.median_size = 3
@@ -133,7 +134,7 @@ def main():
     settings.save_path = args.save_path"""
     
     piv_imgs = []
-    for i in range(args.start_frame[0]+1,end_frame):
+    for i in range(1,len(img_files)):
         piv_imgs.append(img_files[i-1])
         piv_imgs.append(img_files[i])
     piv_imgs1 = piv_imgs[::2]

@@ -6,9 +6,9 @@ Created on Wed Feb  5 14:55:56 2020
 @author: alec
 """
 
-from skimage.filters import sobel, rank, threshold_otsu
-from scipy.ndimage import median_filter, gaussian_filter, binary_fill_holes
-from skimage import io, img_as_float, exposure, data, img_as_uint, img_as_ubyte
+from skimage.filters import threshold_otsu#,sobel, rank, 
+from scipy.ndimage import median_filter, gaussian_filter#, binary_fill_holes
+#from skimage import io, img_as_float, exposure, data, img_as_uint, img_as_ubyte
 
 
 def dynamic_masking(image,keep='dark',filter_size=7,threshold=None):
@@ -58,7 +58,7 @@ def dynamic_masking(image,keep='dark',filter_size=7,threshold=None):
             imcopy[background > threshold] = 0
     if keep=='light':
         if threshold is None:
-            imcopy[background < threshold_otsu(background)] = 0
+            imcopy[image < threshold_otsu(background)] = 0
         else:
-            imcopy[background < threshold] = 0
+            imcopy[image < threshold] = 0
     return imcopy #image

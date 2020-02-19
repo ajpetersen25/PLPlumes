@@ -103,14 +103,17 @@ def convert_I_to_C(image,alphas,smoothing_kernel):
     return image*gaussian_filter(alphas,sigma=smoothing_kernel)
 
 
-def plume_outline(frame,kernel,threshold):
+def plume_outline(frame,kernel):
+    """
     img_outline = frame>threshold
-    image, contours, hierarchy =   cv2.findContours(img_outline.copy().astype('uint8'),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy =   cv2.findContours(img_outline.copy().astype('uint8'),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
     c_size = ([c.size for c in contours])
     lc = np.where(c_size == np.max(c_size))[0][0]
-    plume_contour =cv2.drawContours(image,contours[lc],-1, 255, 1)
+    plume_contour = cv2.drawContours(image,contours[lc],-1, 255, 1)
 
-    return plume_contour
+    return plume_contour"""
+    for col in range(0,frame.shape[1]):
+        cross = windowed_average((frame,kernel))
 
 def gaussian_plume_width():
     """ based on the near half of the plume image, fit a gaussian"""
