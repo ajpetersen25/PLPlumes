@@ -5,108 +5,145 @@ Created on Wed Feb 12 10:50:18 2020
 
 @author: alec
 """
-
 import os,sys
-from os.path import splitext
 import argparse
 import numpy as np
-
-import time
-from PLPlumes.pio.image_io import load_tif,write_tif
-
-import multiprocessing
-from itertools import repeat
-
-def backsub_t0(params):
-    frame,d,save_name = params
-    write_tif(save_name,frame-d)
-
-def backsub_t1(params):
-    frame1,frame2,d1,d2,save_name1,save_name2 = params
-    write_tif(save_name1,frame1-d1)
-    write_tif(save_name2,frame2-d2)
-
-    
+from PLPlumes.pio import imgio
+import copy
+import getpass
+from datetime import datetime
 
 def main():
-    ''' Background subtract images. '''
-    tic = time.time()
-    # parse inputs
-    parser = argparse.ArgumentParser(
-               description='Program to perform background subtract and normalise img files.\n\nThe input file is first normalised, then minimum values are calculated and subtracted.\n\nOutputs are min.piv and .bsub.piv files',
-               formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('save_path',type=str,nargs=1,default='./',help='path to directory you want to save _bsub images')
-    parser.add_argument('type', type=int,
-               help='[0] all [1] pulsed')
-    parser.add_argument('frame_increment', type=int, nargs='?',
-                      default=1,help='Frames to increment for backsub for subsampling.\nOnly valid toy type 0')
-    parser.add_argument('cores',type=int,nargs=1,default=1,help='number of cores to use')
-    parser.add_argument('files', nargs='+',
-               help='Name of files as inputs')
-    args = parser.parse_args()
-    
-    for file in args.files:
-        # skip files that don't exist
-        if os.path.isfile(file) == 0:
-            print('WARNING: File does not exist: %s' % file)
-            print('skipping...')
-            continue
-        else:
-            print('Handling File : %s' % file)
-    
-    img_files = args.files#glob.glob(args.path_to_image_files)   
-    save_list = [args.save_path+splitext(e)[0] +'_bsub' +splitext(e)[1] for e in img_files]
-    
-    
-    img = load_tif(img_files[0])
-    if args.type == 0:
-        print('Continuous background subtraction')
-        print('Finding  minimum')
-    
-        d = img.max*np.ones(img.shape[0]*img.shape[1],)
-        # generate frame numbers to average (excluding first frame above)
-        frames = np.arange(0,len(img_files),args.frame_increment);
-        for i in frames:
-            d = np.minimum(d,load_tif(img_files[i]))
-            
-        sys.stdout.write('\nPerforming background subtraction\n')
-        f_tot = len(img_files)
-        objList = list(zip(img_files,
-           repeat(d,times=f_tot),
-           save_list))
-        
-        pool = multiprocessing.Pool(processes=args.cores)
-        
-        pool.map(backsub_t0,objList)
-    
-    elif args.type == 1:
-        print('Paired background subtraction')
-        print('Finding  minimum')
-        
-        d1 = img.max*np.ones(img.shape[0]*img.shape[1],)
-        d2 = img.max*np.ones(img.shape[0]*img.shape[1],)
-        for i in range(0,len(img_files),2):
-            d1 = np.minimum(d1,img.read_frame(i))
-            d2 = np.minimum(d2,img.read_frame(i+1))
+  ''' Background subtract images. '''
 
-        sys.stdout.write('\nPerforming background subtraction\n')
-        img_files1 = img_files[::2]
-        img_files2 = img_files[1::2]
-        slist1 = save_list[::2]
-        slist2 = save_list[1::2]
-        f_tot = len(img_files1)
-        objList = list(zip(img_files1,img_files2,
-           repeat(d1,times=f_tot),
-           repeat(d2,times=f_tot),
-           slist1,slist2))
-    
-        pool = multiprocessing.Pool(processes=args.cores)
-        
-        pool.map(backsub_t1,objList)
-        
-    print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
-    
+  # parse inputs
+  parser = argparse.ArgumentParser(
+             description='Program to perform background subtract and normalise img files.\n\nThe input file is first normalised, then minimum values are calculated and subtracted.\n\nOutputs are min.piv and .bsub.piv files',
+             formatter_class=argparse.RawTextHelpFormatter)
+  parser.add_argument('type', type=int,
+             help='[0] all [1] pulsed [2] pulsed2')
+  parser.add_argument('frame_increment', type=int, nargs='?',
+                      default=1,help='Frames to increment for backsub for subsampling.\nOnly valid toy type 0')
+  # parser.add_argument('method', type=int,
+  #            help='[0] min [1] mean [2] median')
+  parser.add_argument('files', nargs='+',
+             help='Name of img files as inputs')
+  args = parser.parse_args()
+
+  for file in args.files:
+    # skip files that don't exist
+    if os.path.isfile(file) == 0:
+      print('WARNING: File does not exist: %s' % file)
+      print('skipping...')
+      continue
+    else:
+      print('Handling File : %s' % file)
+
+    # start piv instance
+    img = imgio.imgio('%s' % file)
+    img_root,img_ext = os.path.splitext(file)
+
+    # # copy piv instance
+    img2 = copy.deepcopy(img)
+    img2.file_name = "%s.min.img" % img_root
+    # # generate comment addition.
+    # # TODO: move to pivio class
+    d = datetime.now()
+    img2.comment = "%s\n%s %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__), file, d.strftime("%a %b %d %H:%M:%S %Y")) + str(img.comment,'utf-8')
+
+    img2.write_header()
+
+    # sys.stdout.write('Calculating histogram equalisation\n')
+    # for i in xrange(img.it):
+    #     img2.write_frame(histeq(img.read_frame(i)))
+    # 	sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+1,img2.it))
+    #     sys.stdout.flush()
+
+    # copy piv instance
+    img3 = copy.deepcopy(img)
+    img3.file_name = "%s.bsub.img" % img_root
+
+    # generate comment addition.
+    # TODO: move to pivio class
+    d = datetime.now()
+    img3.comment = "%s\n%s %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__), img.file_name, d.strftime("%a %b %d %H:%M:%S %Y")) + str(img.comment,'utf-8')
+
+    img3.write_header()
+
+    if args.type == 0:
+      print('Continuous background subtraction')
+      print('Finding  minimum')
+
+      d = img.max*np.ones(img.iy*img.ix,)
+      # generate frame numbers to average (excluding first frame above)
+      frames = np.arange(0,img.it,args.frame_increment);
+      for i in frames:
+        d = np.minimum(d,img.read_frame(i))
+        sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+2,img.it))
+        sys.stdout.flush()
+
+      img2.it = 1
+      img2.write_header()
+      img2.write_frame(d)
+
+      sys.stdout.write('\nPerforming background subtraction\n')
+      for i in range(img.it):
+        img3.write_frame(img.read_frame(i)-d)
+        sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+1,img.it))
+        sys.stdout.flush()
+
+    elif args.type == 1:
+      print('Paired background subtraction')
+      print('Finding  minimum')
+
+      d1 = img.max*np.ones(img.iy*img.ix,)
+      d2 = img.max*np.ones(img.iy*img.ix,)
+      for i in range(0,img.it,2):
+          sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+2,img.it))
+          sys.stdout.flush()
+          d1 = np.minimum(d1,img.read_frame(i))
+          d2 = np.minimum(d2,img.read_frame(i+1))
+
+      img2.it = 2
+      img2.write_header()
+      img2.write_frame(d1)
+      img2.write_frame(d2)
+
+      sys.stdout.write('\nPerforming background subtraction\n')
+      for i in range(0,img.it,2):
+        img3.write_frame(img.read_frame(i)-d1)
+        img3.write_frame(img.read_frame(i+1)-d2)
+        sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+2,img.it))
+        sys.stdout.flush()
+
+    else:
+      print('Individual background subtraction')
+      sys.stdout.write('\nPerforming background subtraction\n')
+
+      img2.it = img.it/2
+      img2.write_header()
+
+      for i in range(0,img.it,2):
+        d = np.minimum(img.read_frame(i+1),img.read_frame(i))
+        img2.write_frame(d)
+        img3.write_frame(img.read_frame(i)-d)
+        img3.write_frame(img.read_frame(i+1)-d)
+        sys.stdout.write('\r' + 'Frame %04d/%04d' % (i+1,img.it))
+        sys.stdout.flush()
+
+    sys.stdout.write('\n')
+
+def histeq(im,nbr_bins=256):
+
+   #get image histogram
+   imhist,bins = np.histogram(im,nbr_bins,normed=True)
+   cdf = imhist.cumsum() #cumulative distribution function
+   cdf = 255 * cdf / cdf[-1] #normalize
+
+   #use linear interpolation of cdf to find new pixel values
+   im2 = np.interp(im,bins[:-1],cdf)
+
+   return im2
+
 if __name__ == "__main__":
   main()
-    
-    

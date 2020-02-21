@@ -66,7 +66,7 @@ for ((i=0; i<${9}; i++)); do
         end=$((${start}+${pairs_per_job}))
     fi
     #echo ${end}
-    id[$i]=`qsub -q ${6} -l walltime={7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},start_frame=${start},end_frame=${end},piv_increment=${4},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/plume_processing/plume_piv.sh`
+    id[$i]=`qsub -q ${6} -l walltime={7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},start_frame=${start},end_frame=${end},piv_increment=${4},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/plume_processing/tracer_piv.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------

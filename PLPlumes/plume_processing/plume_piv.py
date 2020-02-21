@@ -8,16 +8,18 @@ Created on Wed Feb 12 19:09:27 2020
 from openpiv.windef import first_pass, multipass_img_deform
 from openpiv.validation import local_median_val, global_val,sig2noise_val
 from openpiv.filters import replace_outliers
-from openpiv.tools import save
 import argparse
 import os
 import numpy as np
 
 import time
-from PLPlumes.pio.image_io import load_tif
+from PLPlumes.pio import imgio, pivio
 
 import multiprocessing
 from itertools import repeat
+
+from datetime import datetime 
+import getpass
 
 
 class Settings(object):
@@ -71,19 +73,18 @@ def main():
     parser = argparse.ArgumentParser(
                description='Program for parallel plume piv',
                formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('save_path',type=str,nargs=1,help='path to directory you want to save piv files')
-    parser.add_argument('cores',type=int,nargs=1,default=1,help='number of cores to use')
-    parser.add_argument('start_frame',type=int,nargs='?',default=0,help='image you want to start PIV at')
-    parser.add_argument('end_frame',type=int,nargs='?',default=0,help='image you want to end PIV at')
-    parser.add_argument('files', nargs='+', help='Name of files as inputs')
+    parser.add_argument('img_file', type=str,nargs='1', help='Name of .img file')
+    parser.add_argument('start_frame',nargs='?',default=0,type=int, help='Frame to start separation from')
+    parser.add_argument('end_frame',nargs='?', default=-1,type=int, help='Number of frames to separate')
+    parser.add_argument('piv_increment',nargs='?', default=1,type=int, help='increment between piv cross-correlations')
+    parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for node_separate')
     args = parser.parse_args()
-    img_files = args.files#glob.glob(args.path_to_image_files)   
-    img_files.sort()
-    
+    args = parser.parse_args()
+    img = imgio.imgio(args.img_file)
     if args.end_frame == 0:
-        end_frame = len(img_files)-1
+        end_frame = img.it
     else:
-        end_frame = args.end_frame[0]
+        end_frame = args.end_frame
     # Settings
     settings = Settings()
     settings.window_sizes = (256,128,64)
@@ -132,19 +133,38 @@ def main():
     #settings.scaling_factor
     settings.save_path = args.save_path"""
     
+
     piv_imgs = []
-    for i in range(args.start_frame[0]+1,end_frame):
-        piv_imgs.append(img_files[i-1])
-        piv_imgs.append(img_files[i])
+    for i in range(args.start_frame,end_frame-1,args.piv_increment):
+        piv_imgs.append(i)
+        piv_imgs.append(i+1)
     piv_imgs1 = piv_imgs[::2]
     piv_imgs2 = piv_imgs[1::2]
 
     f_tot = len(piv_imgs1)
-    objList = list(zip(piv_imgs1,piv_imgs2,
-       repeat(settings,times=f_tot)))
+    objList = list(zip(repeat(img,times=f_tot),
+                       piv_imgs1,piv_imgs2,
+                       repeat(settings,times=f_tot)))
 
-    pool = multiprocessing.Pool(processes=args.cores[0])
-    pool.map(plume_piv,objList)
+    pool = multiprocessing.Pool(processes=args.cores)
+    results = pool.map(tracer_piv,objList)
+    results = np.array(results)
+    piv = pivio.pivio(os.path.splitext(img.file_name)[0]+'.piv')
+    piv.ix=img.ix
+    piv.iy=img.iy
+    piv.nx = results[0][0].shape[1]
+    piv.ny = results[0][0].shape[0]
+    piv.nt = f_tot
+    piv.dx = settings.window_sizes[-1]
+    piv.dy = settings.window_sizes[-1]
+    d = datetime.now()
+    piv.comment = piv.comment = "%s\n%s %d %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(),os.path.basename(piv.file_name), 1, piv, 
+                                                     d.strftime("%a %b %d %H:%M:%S %Y")) + piv.comment
+    piv.write_header()
+    
+    for f in range(0,f_tot):
+        data = [results[f][0].flatten(),results[f][1].flatten(),results[f][2].flatten()]
+        piv.write_frame(data)
     
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
     

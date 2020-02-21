@@ -16,14 +16,8 @@ from numba import cfunc, carray
 from numba.types import intc, CPointer, float64, intp, voidptr
 from scipy import LowLevelCallable
 
-from PLPlumes.pio.image_io import load_tif, write_tif
+from PLPlumes.pio import imgio
 
-import multiprocessing
-from itertools import repeat
-import time
-import argparse
-
-from os.path import splitext
 
 def jit_filter_function(filter_function):
     jitted_function = numba.jit(filter_function, nopython=True)
@@ -38,13 +32,10 @@ def jit_filter_function(filter_function):
 def f_std(a):
     return np.std(a)
 
-def separate_frames(params):
-    frame,labeling_threshold, particle_threshold,min_size,particle_flare,window_size,save_name = params
-    tracers = separation_alg(load_tif(frame),labeling_threshold, particle_threshold,min_size,particle_flare,window_size)
-    write_tif(save_name,tracers)
     
 
-def separation_alg(frame,labeling_threshold, particle_threshold,min_size,particle_flare,window_size):
+def separation_alg(params):
+    img,labeling_threshold, particle_threshold,min_size,particle_flare,window_size,f = params
     """
     separates tracers from larger particles in single frame
     """
@@ -52,7 +43,8 @@ def separation_alg(frame,labeling_threshold, particle_threshold,min_size,particl
         kernel=np.array([[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]])
     elif particle_flare == 1:
         kernel=np.array([[0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[0,1,1,1,1,1,0], [1,1,1,1,1,1,1],[0,1,1,1,1,1,0],[0,0,1,1,1,0,0],[0,0,0,1,0,0,0]])
-        
+    
+    frame = img.read_frame2d(f)
     #image_bitdepth,iy,ix = frame.dtype,frame.shape[0],frame.shape[1]
     image_bitdepth = frame.dtype
     f1=copy.deepcopy(frame)
@@ -122,47 +114,6 @@ def separation_alg(frame,labeling_threshold, particle_threshold,min_size,particl
                 
     return tracers
 
-def main():
-    tic = time.time()
-    parser= argparse.ArgumentParser(description='Program to separate .img file into particle and tracer img files', formatter_class=argparse.RawTextHelpFormatter)    
-    parser.add_argument('labeling_threshold', type=int, help='Noise intensity threshold')
-    parser.add_argument('particle_threshold', type=int, help='Particle intensity threshold' )    
-    parser.add_argument('min_size', type=int, help='Particle radius threshold (pixels)')
-    parser.add_argument('particle_flare',nargs='?',default=0,type=bool, help='Set to 1 if particles flare/increase local background intensity. (uses a larger kernel for dilation')
-    parser.add_argument('window_size',nargs='?',default=50,type=int,help='window size for calculating local meand & std for noise filling')
-    parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for separate_frames')
-    parser.add_argument('path_to_image_files',nargs='+', help='Input image files (can use *.file_type)')   
-    #TODO
-    #parser.add_argument('auto_threshold',nargs='?', default='False',help='If true, labeling threshold chosen automatically based on histogram')
-    args = parser.parse_args()
-    
-    img_files = args.path_to_image_files#glob.glob(args.path_to_image_files)   
-    save_list = [splitext(e)[0] +'_tracers' +splitext(e)[1] for e in img_files]
-    
-    param2 = args.labeling_threshold
-    param3 = args.particle_threshold
-    param4 = args.min_size
-    param5 = args.particle_flare
-    param6 = args.window_size
-    f_tot = len(img_files)
-    objList = list(zip(img_files,
-                  repeat(param2,times=f_tot),
-                  repeat(param3,times=f_tot),
-                  repeat(param4,times=f_tot),
-                  repeat(param5,times=f_tot),
-                  repeat(param6,times=f_tot),
-                  save_list))
-    
-    pool = multiprocessing.Pool(processes=args.cores)
-    
-    # process
-    
-    #all_frame_masks,all_U,all_W = pool.map(mask_vframe,objList)
-    pool.map(separate_frames,objList)
 
-    print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
-   
-if __name__ == "__main__":
-    main()
 
 

@@ -1,6 +1,5 @@
-#!/bin/bash -l 
+#!/bin/bash -l
 
-source ~/.zshrc
+source /home/colettif/pet00105/.zshrc
 
-
-/home/alec/Coletti/PLPlumes/PLPlumes/plume_processing/plume_piv.py $save_path $cores $start_frame $end_frame $files 
+python /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/plume_processing/plume_piv.py $img_file $start_frame $end_frame $piv_increment $cores
