@@ -27,9 +27,9 @@ class Settings(object):
 
 
 def plume_piv(params):
-    f1,f2,settings = params
-    frame_a = load_tif(f1).astype('int32')
-    frame_b = load_tif(f2).astype('int32')
+    img,f1,f2,settings = params
+    frame_a = img.read_frame2d(f1)
+    frame_b = img.read_frame2d(f2)
     'first pass'
     x, y, u, v, sig2noise_ratio = first_pass(frame_a,frame_b,settings.window_sizes[0], settings.overlap[0],settings.iterations,
                                   correlation_method=settings.correlation_method, subpixel_method=settings.subpixel_method, 
@@ -64,8 +64,7 @@ def plume_piv(params):
     mask=mask+mask_s2n
     u, v = replace_outliers( u, v, method=settings.filter_method, max_iter=settings.max_filter_iteration, 
                                     kernel_size=settings.filter_kernel_size)
-    save_file = os.path.join(settings.save_path,os.path.splitext(os.path.basename(f1))[0]+'_piv.txt')
-    save(x, y, u, v,mask,save_file, delimiter='\t')
+    return mask,u,v
     
 def main():
     tic = time.time()
@@ -73,12 +72,11 @@ def main():
     parser = argparse.ArgumentParser(
                description='Program for parallel plume piv',
                formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('img_file', type=str,nargs='1', help='Name of .img file')
+    parser.add_argument('img_file', type=str, help='Name of .img file')
     parser.add_argument('start_frame',nargs='?',default=0,type=int, help='Frame to start separation from')
     parser.add_argument('end_frame',nargs='?', default=-1,type=int, help='Number of frames to separate')
     parser.add_argument('piv_increment',nargs='?', default=1,type=int, help='increment between piv cross-correlations')
     parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for node_separate')
-    args = parser.parse_args()
     args = parser.parse_args()
     img = imgio.imgio(args.img_file)
     if args.end_frame == 0:
@@ -107,7 +105,6 @@ def main():
     settings.interpolation_order= 3
     #settings.dt = (1/600)
     #settings.scaling_factor
-    settings.save_path = args.save_path[0]
     
     """ #Setting for View1 dn45 Plumes
     settings = Settings()
@@ -130,12 +127,11 @@ def main():
     settings.std_threshold = 10
     settings.interpolation_order= 3
     #settings.dt = (1/600)
-    #settings.scaling_factor
-    settings.save_path = args.save_path"""
+    #settings.scaling_factor"""
     
 
     piv_imgs = []
-    for i in range(args.start_frame,end_frame-1,args.piv_increment):
+    for i in range(args.start_frame,end_frame,args.piv_increment):
         piv_imgs.append(i)
         piv_imgs.append(i+1)
     piv_imgs1 = piv_imgs[::2]
@@ -147,7 +143,7 @@ def main():
                        repeat(settings,times=f_tot)))
 
     pool = multiprocessing.Pool(processes=args.cores)
-    results = pool.map(tracer_piv,objList)
+    results = pool.map(plume_piv,objList)
     results = np.array(results)
     piv = pivio.pivio(os.path.splitext(img.file_name)[0]+'.piv')
     piv.ix=img.ix
@@ -169,5 +165,4 @@ def main():
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
     
 if __name__ == "__main__":
-  main()
-    
+  main()    

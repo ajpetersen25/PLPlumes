@@ -34,7 +34,6 @@ def main():
         file_list.sort()
     else:
         file_list = args.input_files
-    
     first = file_list[0]
     
     ##### FAST METHOD: NO ERROR CHECKING #####
