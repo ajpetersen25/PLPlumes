@@ -2,14 +2,14 @@
 # PIV cross-correlation code 
 if [[ $1 == '-h' ]]; then
 echo -e "\nusage: python plume_piv.py [-h]
-                     img_file start_frame end_frame piv_increment cores
+                     img_file piv_file start_frame end_frame cores
                      queue walltime pmem n_jobs working_dir
 
 positional arguments: (all are required)
-  img_file              IMG filename for cross-correlation
+  img_file              IMG filename for converted to bulk density
+  piv_file              PIV filename
   start_frame           start frame for piv
   end_frame             end frame for piv
-  piv_increment        Increment between image pairs (2 for pulsed operation)
   cores                 number of cores to use per job
 
 
@@ -27,12 +27,12 @@ To cancel the processing, you must cancel each job individually. To cancel all j
 username, run 'qselect -u \$USER | xargs qdel'.\n"
     exit 0
 
-#elif ! [ -f "$1" ]; then
-#    echo "[ERROR] $1 not found"
-#    exit 0
+elif ! [ -f "$1" ]; then
+    echo "[ERROR] file $1 not found"
+    exit 0
 fi
 
-#working_dir=`pwd`
+working_dir=`pwd`
 
 # --------------- submit parallel PIV jobs --------------------
 #echo {${5}'*.tif'}
@@ -41,32 +41,40 @@ fi
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${3} - ${2} - 1))
+pairs=$((${4} - ${3}-1))
 pairs_per_job=$(($pairs/${9}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${9} - 1)))
+pairs_last_job=$(($pairs - $pairs_per_job * (${9}-1)))
 # submit part of the img file to each core as a separate job for PIV processing
 fname=$1
 flen=${#fname}-4
 fname=${fname[@]:0:$flen}
+# submit part of the piv file to each core as a separate job for PIV processing
+pname=$2
+plen=${#pname}-4
+pname=${pname[@]:0:$plen}
 
+#echo ${pairs} ${pairs_per_job} ${pairs_last_job}
 for ((i=0; i<${9}; i++)); do
 	# create symlinks for img file for each job to use
 	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
-	fname_i_piv[$i]=$(printf '%s.c%04d.piv' "$fname" "$i")
+	pname_i[$i]=$(printf '%s.c%04d.piv' "$fname" "$i")
+	pname_i_mpf[$i]=$(printf '%s.c%04d.mpf.piv' "$fname" "$i")
 	if [ -f ${fname_i[$i]} ]; then
 		rm ${fname_i[$i]}
+		rm ${pname_i[$i]}
+		#echo ${fname_i[$i]}
 	fi
 	ln -s $1 ${fname_i[$i]} 
+	ln -s $2 ${pname_i[$i]} 
 	# specify start frame and end frame for each job
-    start=$(($i * ${pairs_per_job} * ${4} + ${2}))
-
+    start=$(($i * ${pairs_per_job} + ${3}))
     if [[ $i == $((${9}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${end}
-    id[$i]=`qsub -q ${6} -l walltime={7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},start_frame=${start},end_frame=${end},piv_increment=${4},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/plume_processing/tracer_piv.sh`
+    echo ${i} ${start} ${end} ${fname_i[$i]}
+    id[$i]=`qsub -q ${6} -l walltime=${7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]}, piv_file=${pname_i[$i]}, start_frame=${start},end_frame=${end},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mass_flow_flux.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -108,8 +116,9 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 # ----------------------- clean up ------------------------
 
 # join PIV files
-/home/colettif/pet00105/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.piv' "$fname") ${fname_i_piv[*]}
+/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.mpf.piv' "$pname") ${pname_i_mpf[*]}
 
 # delete job files and symlinks
-rm `echo "$fname.c*"` 
-# rm `echo "*.sh.o* *.sh.e*"`
+#rm `echo "$fname.c*"` 
+#rm `echo "*.sh.o* *.sh.e*"`
+ 

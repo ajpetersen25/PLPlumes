@@ -27,12 +27,12 @@ To cancel the processing, you must cancel each job individually. To cancel all j
 username, run 'qselect -u \$USER | xargs qdel'.\n"
     exit 0
 
-elif ! [ -f "$1" ]; then
-    echo "[ERROR] file $1 not found"
-    exit 0
+#elif ! [ -f "$1" ]; then
+#    echo "[ERROR] $1 not found"
+#    exit 0
 fi
 
-working_dir=`pwd`
+#working_dir=`pwd`
 
 # --------------- submit parallel PIV jobs --------------------
 #echo {${5}'*.tif'}
@@ -41,33 +41,32 @@ working_dir=`pwd`
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${3} - ${2}-1))
+pairs=$((${3} - ${2} - 1))
 pairs_per_job=$(($pairs/${9}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${9}-1)))
+pairs_last_job=$(($pairs - $pairs_per_job * (${9} - 1)))
 # submit part of the img file to each core as a separate job for PIV processing
 fname=$1
 flen=${#fname}-4
 fname=${fname[@]:0:$flen}
-#echo ${pairs} ${pairs_per_job} ${pairs_last_job}
+
 for ((i=0; i<${9}; i++)); do
 	# create symlinks for img file for each job to use
 	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
 	fname_i_piv[$i]=$(printf '%s.c%04d.piv' "$fname" "$i")
-	#if [ -f ${fname_i[$i]} ]; then
-		#rm ${fname_i[$i]}
-		#echo ${fname_i[$i]}
-	#fi
+	if [ -f ${fname_i[$i]} ]; then
+		rm ${fname_i[$i]}
+	fi
 	ln -s $1 ${fname_i[$i]} 
-	
 	# specify start frame and end frame for each job
     start=$(($i * ${pairs_per_job} * ${4} + ${2}))
+
     if [[ $i == $((${9}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    echo ${i} ${start} ${end}
-    id[$i]=`qsub -q ${6} -l walltime=${7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},start_frame=${start},end_frame=${end},piv_increment=${4},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/plume_processing/plume_piv.sh`
+    #echo ${end}
+    id[$i]=`qsub -q ${6} -l walltime={7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},start_frame=${start},end_frame=${end},piv_increment=${4},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/tracer_piv.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -109,8 +108,8 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 # ----------------------- clean up ------------------------
 
 # join PIV files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.piv' "$fname") ${fname_i_piv[*]}
+/home/colettif/pet00105/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.piv' "$fname") ${fname_i_piv[*]}
 
 # delete job files and symlinks
 rm `echo "$fname.c*"` 
-rm `echo "*.sh.o* *.sh.e*"`
+# rm `echo "*.sh.o* *.sh.e*"`

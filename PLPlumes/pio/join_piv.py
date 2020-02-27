@@ -18,7 +18,7 @@ def main():
     '''Join piv files together'''
     parser = argparse.ArgumentParser(description='Program to join PIV files', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('output_file', type=str, help='Name of output PIV file')
-    parser.add_argument('piv_files', nargs='+', help='Name of PIV files to average')
+    parser.add_argument('piv_files', nargs='+', help='Name of PIV files to join')
     args = parser.parse_args()
 
     # Total number of frames

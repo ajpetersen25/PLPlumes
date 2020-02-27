@@ -87,23 +87,11 @@ def rsquared(x, y):
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
     return r_value**2
 
-def concentration_cal_calc(I,C,kernel_size,img_length):
-    alphas = []
-    r_sqr = []
-    y_int = []
-    for i in range(0,img_length):
-        p=np.polyfit(I[:,i],C,1)
-        alphas.append(p[0])
-        r_sqr.append(rsquared(C,p[0]*I[:,i]))
-        y_int.append(p[1])
-    alphas = np.asarray(alphas)
-    r_sqr = np.asarray(r_sqr)
-    y_int = np.asarray(y_int)
-    return alphas,r_sqr,y_int
+def phi_to_rho(phi_arr,rho_p,rho_a):
+    return (phi_arr*rho_p + (1-phi_arr)*rho_a)
 
-def convert_I_to_C(image,alphas,smoothing_kernel):
-    return image*gaussian_filter(alphas,sigma=smoothing_kernel)
-
+def rho_to_phi(rho_arr,rho_p,rho_a):
+    return ((rho_arr-rho_a)/(rho_p-rho_a))
 
 def plume_outline(frame,kernel,dilation_iterations,threshold,med_filt_size):
     """
