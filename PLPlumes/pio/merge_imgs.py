@@ -79,4 +79,7 @@ def main():
             #    f2.write(f.read(4*t.nx*t.ny*t.cols))
             #    sys.stdout.write('\r' + 'Joining frame %04d/%04d' % (kk,piv2.nt))
             #    sys.stdout.flush()
+if __name__ == "__main__":
+  main() 
+
         

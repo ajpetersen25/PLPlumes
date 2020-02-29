@@ -112,5 +112,5 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.piv' "$fname") ${fname_i_piv[*]}
 
 # delete job files and symlinks
-rm `echo "$fname.c*"` 
-rm `echo "*.sh.o* *.sh.e*"`
+#rm `echo "$fname.c*"` 
+#rm `echo "*.sh.o* *.sh.e*"`

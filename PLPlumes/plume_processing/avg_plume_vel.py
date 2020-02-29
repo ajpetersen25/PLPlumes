@@ -8,29 +8,31 @@ Created on Sat Feb 15 17:55:39 2020
 
 import numpy as np
 import numpy.ma as nma
-from PLPlumes.pio.piv_io import load_piv
-from PLPlumes.pio.apply_mask import apply_masktxt
+from PLPlumes.pio import pivio
+from PLPlumes.pio import apply_mask
 import time
 from openpiv.tools import save
 import argparse
 
 
 
-def average_masked_vel(piv_files,piv_shape):
-    u_ms = []
-    v_ms = []
+def average_masked_vel(piv):
+    u = []
+    v = []
     masks = []
-    for i in range(0,len(piv_files)):
-        _,_,u_m,v_m,mask = apply_masktxt(piv_files[i],piv_shape)
-        u_ms.append(u_m)
-        v_ms.append(v_m)
-        masks.append(mask.astype('bool'))
-    masks=~np.array(masks)
-    u_ms = nma.masked_array(u_ms,mask=masks)
-    v_ms = nma.masked_array(v_ms,mask=masks)
-    u_m_avg = nma.mean(u_ms,axis=0)
-    v_m_avg = nma.mean(v_ms,axis=0)
-    return(u_m_avg,v_m_avg)
+    for f in range(0,piv.nt):
+        piv_frame = piv.read_frame2d(f)
+        u.append(piv_frame[1])
+        v.append(piv_frame[2])
+        masks.append(piv_frame[0])
+    masks = np.array(masks).astype('bool')
+    masked_ u = nma.masked_array(u,mask=~masks)
+    masked_ v = nma.masked_array(v,mask=~masks)
+
+
+    u_m_avg = nma.mean(masked_u,axis=0)
+    v_m_avg = nma.mean(masked_v,axis=0)
+    return(u_m_avg.mask,u_m_avg,v_m_avg)
 
 def main():
     tic = time.time()
@@ -38,18 +40,22 @@ def main():
     parser = argparse.ArgumentParser(
                description='Program for averaging piv files',
                formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('save_name',type=str,nargs=1,help='path to directory you want to save piv files')
-    parser.add_argument('cores',type=int,nargs=1,default=1,help='number of cores to use')
-    parser.add_argument('nx',default=79,type=int,nargs=?,help='piv cols')
-    parser.add_argument('ny',default=49,type=int,nargs=?,help='piv rows')
-    parser.add_argument('files', nargs='+', help='Name of files as inputs')
+    parser.add_argument('piv_file',type=str,help='.piv file you want to average')
     args = parser.parse_args()
-    piv_files = args.files
-    piv_files.sort()
-    u_m_avg,v_m_avg = average_masked_vel(piv_files, (args.ny[0],args.nx[0]))
-    x,y,_,_,_ = load_piv(piv_files[0],(args.ny[0],args.nx[0]),full=True)
+    piv = pivio.pivio(args.piv_file)
     
-    save(x,y,u_m_avg,v_m_avg,u_m_avg.mask,args.save_name[0], delimiter='\t')
+    avg_mask, u_m_avg,v_m_avg = average_masked_vel(piv)
+
+    piv_root,piv_ext = os.path.splitext(args.piv_file)
+    piv2 = copy.deepcopy(piv)
+    piv2.file_name = piv_root+'.ave.piv'
+    d = datetime.now()
+    piv2.comment = "%s\n%s %d %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(),os.path.basename(__file__), 1, args.piv_file, 
+                                                     d.strftime("%a %b %d %H:%M:%S %Y")) + str(piv.comment,'utf-8')
+    piv2.nt = 1
+    piv2.write_header()
+    data = [avg_mask.flatten(),u_m_avg.flatten(),v_m_mask.flatten()]
+    piv2.write_frame(data)
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
     
 if __name__ == "__main__":

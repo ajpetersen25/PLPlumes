@@ -61,7 +61,11 @@ def main():
     piv2.file_name = "%s" % (args.output_file)
     piv2.nt = nt
     d = datetime.now()
-    piv2.comment = "%s\n%s %s %s\npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__),args.output_file, ' '.join(args.piv_files), d.strftime("%a %b %d %H:%M:%S %Y")) + str(piv.comment,'utf-8')
+    try:
+        piv2.comment = "%s\n%s %s %s\npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__),args.output_file, ' '.join(args.piv_files), d.strftime("%a %b %d %H:%M:%S %Y")) + str(piv.comment,'utf-8')
+    except:
+        piv2.comment = "%s\n%s %s %s\npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__),args.output_file, ' '.join(args.piv_files), d.strftime("%a %b %d %H:%M:%S %Y")) + piv.comment
+        
     piv2.write_header()
 
     f2 = open("%s" % piv2.file_name, "ab")

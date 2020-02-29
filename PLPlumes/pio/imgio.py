@@ -29,6 +29,8 @@ class imgio:
                         self.type = 'uint8'
                     elif self.bytes == 2:
                         self.type = 'uint16'
+                    elif self.bytes == 4:
+                        self.type = 'float32'
             except IOError:
                 print('No file found: %s' % self.file_name)
                 print('This instance will create new file')

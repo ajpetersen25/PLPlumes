@@ -2,12 +2,14 @@
 # PIV cross-correlation code 
 if [[ $1 == '-h' ]]; then
 echo -e "\nusage: python plume_piv.py [-h]
-                     img_file piv_file start_frame end_frame cores
+                     img_file piv_file threshold window_threshold start_frame end_frame cores
                      queue walltime pmem n_jobs
 
 positional arguments: (all are required)
   img_file              IMG filename containing bulk density values
   piv_file              PIV filename
+  threshold             image intensity threshold
+  window_threshold      number btwn 0 and 1 representing the number of pixels in a PIV interrogatin window that must be above the threshold
   start_frame           start frame for piv
   end_frame             end frame for piv
   cores                 number of cores to use per job
@@ -43,14 +45,14 @@ working_dir=`pwd`
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${4} - ${3}-1))
-pairs_per_job=$(($pairs/${9}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${9}-1)))
+pairs=$((${6} - ${5}))
+pairs_per_job=$(($pairs/${11}))
+pairs_last_job=$(($pairs - $pairs_per_job * (${11}-1)))
 
 # submit part of the img file to each core as a separate job for PIV processing
 fname=$1
-flen=${#fname}-4
-fname=${fname[@]:0:$flen}
+#flen=${#fname}-4
+#fname=${fname[@]:0:$flen}
 
 # submit part of the piv file to each core as a separate job for PIV processing
 pname=$2
@@ -58,29 +60,25 @@ plen=${#pname}-4
 pname=${pname[@]:0:$plen}
 
 #echo ${pairs} ${pairs_per_job} ${pairs_last_job}
-for ((i=0; i<${9}; i++)); do
+for ((i=0; i<${11}; i++)); do
 	# create symlinks for img file for each job to use
-	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
+	#fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
 	pname_i[$i]=$(printf '%s.c%04d.piv' "$pname" "$i")
-	pname_i_mpf[$i]=$(printf '%s.c%04d.mpf.piv' "$pname" "$i")
-	if [ -f ${fname_i[$i]} ]; then
-		rm ${fname_i[$i]}
-	fi
+	pname_i_msk[$i]=$(printf '%s.c%04d.msk.piv' "$pname" "$i")
     if [ -f ${pname_i[$i]} ]; then
 		rm ${pname_i[$i]}
 	fi
-	ln -s $1 ${fname_i[$i]} 
 	ln -s $2 ${pname_i[$i]} 
 
 	# specify start frame and end frame for each job
-    start=$(($i * ${pairs_per_job} + ${3}))
-    if [[ $i == $((${9}-1)) ]]; then
+    start=$(($i * ${pairs_per_job} + ${5}))
+    if [[ $i == $((${11}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${i} ${start} ${end} ${fname_i[$i]} ${pname_i[$i]}
-    id[$i]=`qsub -q ${6} -l walltime=${7},nodes=1:ppn=${5},pmem=${8} -v img_file=${fname_i[$i]},piv_file=${pname_i[$i]},start_frame=${start},end_frame=${end},cores=${5} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mass_flow_flux.sh`
+    #echo ${i} ${start} ${end} ${pname_i[$i]}
+    id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${1},piv_file=${pname_i[$i]},threshold=${3},window_threshold=${4},start_frame=${start},end_frame=${end},cores=${7} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mask_vel.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -92,7 +90,7 @@ alias myqstat='qstat | grep $me'
 
 # count number of jobs complete
 no_complete=0
-for ((i=0; i<${9}; i++)); do
+for ((i=0; i<${11}; i++)); do
 	jobstate=`myqstat | grep ${id[$i]}` # check job status
 	status=`echo $jobstate | awk -F' ' '{print $5}'`
 	if [ "$status" == "C" ]; then
@@ -103,9 +101,9 @@ counter=0
 aniwait=("|" "/" "-" "\\")
 echo -n ${aniwait[$counter]}
 
-while [ $no_complete -lt ${9} ]; do  # while not all jobs are complete
+while [ $no_complete -lt ${11} ]; do  # while not all jobs are complete
 	no_complete=0
-	for ((i=0; i<${9}; i++)); do
+	for ((i=0; i<${11}; i++)); do
         	jobstate=`myqstat | grep ${id[$i]}` # check job status
 		status=`echo $jobstate | awk -F' ' '{print $5}'`
 		if [ "$status" == "C" ]; then
@@ -122,7 +120,7 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 # ----------------------- clean up ------------------------
 
 # join PIV files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.mpf.piv' "$pname") ${pname_i_mpf[*]}
+/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.msk.piv' "$pname") ${pname_i_msk[*]}
 
 # delete job files and symlinks
 #rm `echo "$fname.c*"` 

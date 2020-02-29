@@ -4,12 +4,8 @@
 
 
 import numpy.ma as nma
-from PLPlumes.pio.piv_io import load_piv
 
 
-
-def apply_masktxt(piv_txt_file,piv_arr_shape):
-    x,y,u,v,mask_arr = load_piv(piv_txt_file,piv_arr_shape,full=True)
-    masked_u = nma.masked_array(u,mask=mask_arr)
-    masked_v = nma.masked_array(v,mask=mask_arr)
-    return x,y,masked_u,masked_v,mask_arr
+def apply_mask(piv_arr,mask_arr):
+    masked_vel = nma.masked_array(piv_arr,mask=~mask_arr.astype('bool'))
+    return masked_vel

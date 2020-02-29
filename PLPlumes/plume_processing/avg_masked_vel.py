@@ -1,56 +1,64 @@
-# takes in masked numpy arrays and calculates a spatial average
-# save final averaged array as a separate .npy file
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Feb 15 17:55:39 2020
 
+@author: alec
+"""
 
 import numpy as np
 import numpy.ma as nma
-import argparse
-from .apply_mask import apply_mask as am
+from PLPlumes.pio import pivio
+#from PLPlumes.pio import apply_mask
 import time
+import argparse
 import os
+import copy
+from datetime import datetime
+import getpass
 
 
-def average_masked(piv_file, mask_file,start_frame,end_frame):
-    """ 
-    Input: 
-      piv   --str:   path to .npy vel file
-      mask  --str:   path to .npy mask file
-    Output:
-      ave_mvel  --array: masked numpy array"""
-    masked_vel = am(piv_file,mask_file)
-    ave_mvel = nma.mean(masked_vel[start_frame:end_frame,:,:],axis=0)
-    return ave_mvel
+def average_masked_vel(piv):
+    u = []
+    v = []
+    masks = []
+    for f in range(0,piv.nt):
+        piv_frame = piv.read_frame2d(f)
+        u.append(piv_frame[1])
+        v.append(piv_frame[2])
+        masks.append(piv_frame[0])
+    masks = np.array(masks).astype('bool')
+    masked_u = nma.masked_array(u,mask=~masks)
+    masked_v = nma.masked_array(v,mask=~masks)
+
+
+    u_m_avg = nma.mean(masked_u,axis=0)
+    v_m_avg = nma.mean(masked_v,axis=0)
+    return(~u_m_avg.mask,u_m_avg,v_m_avg)
 
 def main():
-  # calls average_masked and saves both average velocity field and mask for time-averaged field in separate
-  # .npy files (necessary until saving masked numpy arrays is implemented)
     tic = time.time()
+    # parse inputs
     parser = argparse.ArgumentParser(
-             description='Program to calculate average field of masked npy PIV files (saves average mask as well)', 
-             formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('piv_file',type=str,nargs=1,help='Path to velocity .npy file')
-    parser.add_argument('mask_file',type=str,nargs=1,help='Path to masking .npy file')
-    parser.add_argument('start_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to start the masking at')
-    parser.add_argument('end_frame',type=int,nargs='?',default=0,help='Frame of PIV you want to end the masking at')
-    args = parser.parse_args() 
+               description='Program for averaging piv files',
+               formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('piv_file',type=str,help='.piv file you want to average')
+    args = parser.parse_args()
+    piv = pivio.pivio(args.piv_file)
     
-    fail = False
-    # check if IMG file exists
-    if os.path.exists(args.mask_file[0]) == 0 or os.path.exists(args.piv_file[0])==0:
-        print('[ERROR] file does not exist')
-        fail = True
-    
-    if fail:
-        print('exiting...')
-        os.sys.exit(1)
-    if args.end_frame == 0:
-        temp = np.load(args.piv_file[0])
-        end_frame = temp['arr_0'].shape[0]
-        
-    ave_mvel = average_masked(args.piv_file[0],args.mask_file[0],args.start_frame,end_frame)
-    np.savez_compressed(os.path.splitext(args.piv_file[0])[0]+'.ave.npz',ave_mvel.data)
-    np.savez_compressed(os.path.splitext(args.mask_file[0])[0]+'.tave_mask.npz',ave_mvel.mask) # saves mask which will work for all time-averaged fields
-    print('[FINISHED]: %f seconds elapsed' %(time.time()-tic))
+    avg_mask, u_m_avg,v_m_avg = average_masked_vel(piv)
 
+    piv_root,piv_ext = os.path.splitext(args.piv_file)
+    piv2 = copy.deepcopy(piv)
+    piv2.file_name = piv_root+'.ave.piv'
+    d = datetime.now()
+    piv2.comment = "%s\n%s %d %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(),os.path.basename(__file__), 1, args.piv_file, 
+                                                     d.strftime("%a %b %d %H:%M:%S %Y")) + str(piv.comment,'utf-8')
+    piv2.nt = 1
+    piv2.write_header()
+    data = [avg_mask.flatten(),u_m_avg.flatten(),v_m_avg.flatten()]
+    piv2.write_frame(data)
+    print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
+    
 if __name__ == "__main__":
-    main()
+  main()

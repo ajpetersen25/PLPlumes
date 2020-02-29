@@ -38,18 +38,18 @@ def plume_piv(params):
     mask=np.full_like(x,False)
     
     # Commented out sections should be uncommented for all Plumes except the dn45 View1 plumes
-    #u, v, mask_m = local_median_val( u, v, u_threshold=settings.median_threshold+1, v_threshold=settings.median_threshold+1, 
-    #                                          size=1)
+    u, v, mask_m = local_median_val( u, v, u_threshold=settings.median_threshold+1, v_threshold=settings.median_threshold+1, 
+                                              size=1)
     u,v, mask_s2n = sig2noise_val( u, v, sig2noise_ratio, threshold = settings.sig2noise_threshold)
     u, v, mask_g = global_val( u, v, settings.MinMax_U_disp, settings.MinMax_V_disp)
-    mask=mask+mask_g+mask_s2n#+mask_m
+    mask=mask+mask_g+mask_s2n+mask_m
     #mask=mask+mask_g
     
     u, v = replace_outliers( u, v, method=settings.filter_method, max_iter=settings.max_filter_iteration,
                             kernel_size=1)
     
     i = 1
-    for i in range(2, settings.iterations+1):
+    for i in range(2, settings.iterations):
         x, y, u, v, sig2noise_ratio, mask = multipass_img_deform(frame_a, frame_b, settings.window_sizes[i-1], settings.overlap[i-1],
                     settings.iterations,i,x, y, u, v, correlation_method=settings.correlation_method,
                     subpixel_method=settings.subpixel_method, do_sig2noise=settings.extract_sig2noise,
@@ -60,10 +60,34 @@ def plume_piv(params):
                     max_filter_iteration=settings.max_filter_iteration, filter_kernel_size=settings.filter_kernel_size,
                     interpolation_order=settings.interpolation_order)    
         
+    u, v, mask_m = local_median_val( u, v, u_threshold=settings.median_threshold+1, v_threshold=settings.median_threshold+1, 
+                                              size=1)
     u,v, mask_s2n = sig2noise_val( u, v, sig2noise_ratio, threshold = settings.sig2noise_threshold)
-    mask=mask+mask_s2n
+    u, v, mask_g = global_val( u, v, settings.MinMax_U_disp, settings.MinMax_V_disp)
+    mask=mask_g+mask_s2n+mask_m
     u, v = replace_outliers( u, v, method=settings.filter_method, max_iter=settings.max_filter_iteration, 
                                     kernel_size=settings.filter_kernel_size)
+    
+    i=i+1
+    
+    x, y, u, v, sig2noise_ratio, mask = multipass_img_deform(frame_a, frame_b, settings.window_sizes[i-1], settings.overlap[i-1],
+            settings.iterations,i,x, y, u, v, correlation_method=settings.correlation_method,
+            subpixel_method=settings.subpixel_method, do_sig2noise=settings.extract_sig2noise,
+            sig2noise_method=settings.sig2noise_method, sig2noise_mask=settings.sig2noise_mask,
+            MinMaxU=settings.MinMax_U_disp,
+            MinMaxV=settings.MinMax_V_disp,std_threshold=settings.std_threshold,
+            median_threshold=settings.median_threshold,median_size=settings.median_size,filter_method=settings.filter_method,
+            max_filter_iteration=settings.max_filter_iteration, filter_kernel_size=settings.filter_kernel_size,
+            interpolation_order=settings.interpolation_order)    
+        
+    u, v, mask_m = local_median_val( u, v, u_threshold=settings.median_threshold+1, v_threshold=settings.median_threshold+1, 
+                                              size=1)
+    u,v, mask_s2n = sig2noise_val( u, v, sig2noise_ratio, threshold = settings.sig2noise_threshold)
+    u, v, mask_g = global_val( u, v, settings.MinMax_U_disp, settings.MinMax_V_disp)
+    mask=mask_g+mask_s2n+mask_m
+    u, v = replace_outliers( u, v, method=settings.filter_method, max_iter=settings.max_filter_iteration, 
+                                    kernel_size=settings.filter_kernel_size)
+    
     return mask,u,v
     
 def main():
@@ -86,18 +110,20 @@ def main():
     # Settings
     settings = Settings()
     settings.window_sizes = (256,128,64)
-    settings.overlap = (128,64,32)
+    settings.overlap = (0,0,32)
+    #settings.window_sizes = (320,160,80)
+    #settings.overlap = (160,80,40)
     settings.iterations = 3
     settings.correlation_method = 'circular'
     settings.subpixel_method = 'gaussian'
-    settings.extract_sig2noise = True 
+    settings.extract_sig2noise = False
     settings.sig2noise_method = 'peak2peak'
     settings.sig2noise_mask = 2
     settings.sig2noise_threshold = 1.0
-    settings.MinMax_U_disp = (-50,100)
+    settings.MinMax_U_disp = (-50,160)
     settings.MinMax_V_disp = (-50,50)
     settings.median_threshold = 2
-    settings.median_size = 3
+    settings.median_size = 1
     settings.filter_method = 'localmean'
     settings.max_filter_iteration = 3
     settings.filter_kernel_size = 2
@@ -154,7 +180,7 @@ def main():
     piv.dx = settings.window_sizes[-1]
     piv.dy = settings.window_sizes[-1]
     d = datetime.now()
-    piv.comment = piv.comment = "%s\n%s %d %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(),os.path.basename(piv.file_name), 1, piv, 
+    piv.comment = "%s\n%s %d %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(),os.path.basename(piv.file_name), 1, piv, 
                                                      d.strftime("%a %b %d %H:%M:%S %Y")) + piv.comment
     piv.write_header()
     
