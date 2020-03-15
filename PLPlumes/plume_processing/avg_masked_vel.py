@@ -34,7 +34,7 @@ def average_masked_vel(piv):
 
     u_m_avg = nma.mean(masked_u,axis=0)
     v_m_avg = nma.mean(masked_v,axis=0)
-    return(~u_m_avg.mask,u_m_avg,v_m_avg)
+    return(np.flipud(~u_m_avg.mask),np.flipud(u_m_avg),np.flipud(v_m_avg))
 
 def main():
     tic = time.time()

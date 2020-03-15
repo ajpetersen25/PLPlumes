@@ -9,7 +9,7 @@ Created on Wed Feb 26 16:24:44 2020
 import os
 import numpy as np
 from PLPlumes.pio import imgio
-from PLPlumes.plume_processing.plume_functions import phi_to_rho
+from PLPlumes.plume_processing.plume_functions import phi_to_rho,windowed_average
 import argparse
 import time
 import copy
@@ -31,6 +31,10 @@ def convert_frame(params):
     img,pq,pl,start_height,frame = params
     img_frame = img.read_frame2d(frame).astype('float32')
     phi_frame = np.zeros(img_frame.shape).astype('float32')
+    pq = windowed_average(np.array(pq),250)
+    pl[:,0] = windowed_average(np.array(pl)[:,0],250)
+    pl[:,1] = windowed_average(np.array(pl)[:,1],250)
+    pl[:,2] = windowed_average(np.array(pl)[:,2],250)
     for c in range(0,img.ix):
         if c<start_height:
             pass

@@ -26,7 +26,7 @@ def mp_flux_map(params):
     for s in slices:
         mpf_frame[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = np.mean(rhob_img_frame[s])
         
-    return np.flipud(piv.read_frame2d(frame)[0]), np.flipud(piv.read_frame2d(frame)[1]*mpf_frame),np.flipud(piv.read_frame2d(frame)[2]*mpf_frame)
+    return(np.flipud(piv_frame[0]), np.flipud(piv_frame[1]*mpf_frame),np.flipud(piv_frame[2]*mpf_frame))
 
 
 def main():

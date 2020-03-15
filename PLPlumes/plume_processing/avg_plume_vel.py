@@ -13,8 +13,10 @@ from PLPlumes.pio import apply_mask
 import time
 from openpiv.tools import save
 import argparse
-
-
+import os
+import copy
+from datetime import datetime
+import getpass
 
 def average_masked_vel(piv):
     u = []
@@ -26,8 +28,8 @@ def average_masked_vel(piv):
         v.append(piv_frame[2])
         masks.append(piv_frame[0])
     masks = np.array(masks).astype('bool')
-    masked_ u = nma.masked_array(u,mask=~masks)
-    masked_ v = nma.masked_array(v,mask=~masks)
+    masked_u = nma.masked_array(u,mask=~masks)
+    masked_v = nma.masked_array(v,mask=~masks)
 
 
     u_m_avg = nma.mean(masked_u,axis=0)
@@ -54,7 +56,7 @@ def main():
                                                      d.strftime("%a %b %d %H:%M:%S %Y")) + str(piv.comment,'utf-8')
     piv2.nt = 1
     piv2.write_header()
-    data = [avg_mask.flatten(),u_m_avg.flatten(),v_m_mask.flatten()]
+    data = [avg_mask.flatten(),u_m_avg.flatten(),v_m_avg.flatten()]
     piv2.write_frame(data)
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
     
