@@ -2,18 +2,20 @@
 # PIV cross-correlation code 
 if [[ $1 == '-h' ]]; then
 echo -e "\nusage: python plume_piv.py [-h]
-                     img_file p_quad p_lin start_height start_frame end_frame cores
-                     queue walltime pmem n_jobs orientation
+                     img_file labeling_threshold particle_threshold min_size particle_flare window_size
+                     start_frame end_frame cores queue walltime pmem n_jobs
+                     
 positional arguments: (all are required)
-  img_file              IMG filename for converted to bulk density
-  p_quad                txt file of fits for quadratic part of conversion
-  p_lin                 txt file of fits for linear part of conversion
-  start_height          column (height) to start conversion at
-  start_frame           start frame for piv
-  end_frame             end frame for piv
-  cores                 number of cores to use per job
-
-
+  img_file           - str -  name of raw IMG file (with extention)
+  labeling_threshold - int -  noise threshold; pixels below get set to 0, pixels above get labeled
+  particle_threshold - int -  threshold for mean intensity of an inertial particle 
+  min_size           - int -  minimum area (in pixels) for an inertial particle
+  particle_flare     -bool -  default 0 (little flare), choose 1 for larger dilation kernel to deal with brighter/bigger particles
+  window_size        - int -  size of window for calculating local std on for fill in values
+  start_frame        - int -  first frame number (numbering starts at 0)
+  end_frames         - int -  termination frame (1000 stops at frame 999. therefore start_frame = 0 to end_frame = 1000 covers 1000 frames)
+  cores              - int -  number of cores to use per node
+  
   queue         MSI queue name (recommended: small)
   walltime      walltime req'd (hh:mm:ss)
   pmem          memory req'd per core (recommended: 2580mb)
@@ -39,18 +41,18 @@ working_dir=`pwd`
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${6} - ${5}))
-pairs_per_job=$(($pairs / ${11}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${11}-1)))
+pairs=$((${8} - ${7}))
+pairs_per_job=$(($pairs / ${13}))
+pairs_last_job=$(($pairs - $pairs_per_job * (${13}-1)))
 # submit part of the img file to each core as a separate job for PIV processing
 fname=$1
 flen=${#fname}-4
 fname=${fname[@]:0:$flen}
 
-for ((i=0; i<${11}; i++)); do
+for ((i=0; i<${13}; i++)); do
 	# create symlinks for img file for each job to use
 	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
-	fname_i_rho[$i]=$(printf '%s.c%04d.rho_b.img' "$fname" "$i")
+	fname_i_tracers[$i]=$(printf '%s.c%04d.tracers.img' "$fname" "$i")
 	#if [ -f ${fname_i[$i]} ]; then
 		#rm ${fname_i[$i]}
 		#echo ${fname_i[$i]}
@@ -58,14 +60,14 @@ for ((i=0; i<${11}; i++)); do
 	ln -s $1 ${fname_i[$i]} 
 	
 	# specify start frame and end frame for each job
-    start=$(($i * ${pairs_per_job} + ${5}))
-    if [[ $i == $((${11}-1)) ]]; then
+    start=$(($i * ${pairs_per_job} + ${7}))
+    if [[ $i == $((${13}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${i} ${start} ${end} ${fname_i_rho[$i]} 
-    id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${fname_i[$i]},p_quad=${2},p_lin=${3},start_height=${4},start_frame=${start},end_frame=${end},cores=${7},orientation=${12} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/write_C_imgs.sh`
+    #echo ${i} ${start} ${end} ${fname_i_tracers[$i]} 
+    id[$i]=`qsub -q ${10} -l walltime=${11},nodes=1:ppn=${9},pmem=${12} -v img_file=${fname_i[$i]},labeling_threshold=${2},particle_threshold=${3},min_size=${4},particle_flare=${5},window_size=${6},start_frame=${start},end_frame=${end},cores=${9} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/separate.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -77,7 +79,7 @@ alias myqstat='qstat | grep $me'
 
 # count number of jobs complete
 no_complete=0
-for ((i=0; i<${11}; i++)); do
+for ((i=0; i<${13}; i++)); do
 	jobstate=`myqstat | grep ${id[$i]}` # check job status
 	status=`echo $jobstate | awk -F' ' '{print $5}'`
 	if [ "$status" == "C" ]; then
@@ -88,9 +90,9 @@ counter=0
 aniwait=("|" "/" "-" "\\")
 echo -n ${aniwait[$counter]}
 
-while [ $no_complete -lt ${11} ]; do  # while not all jobs are complete
+while [ $no_complete -lt ${13} ]; do  # while not all jobs are complete
 	no_complete=0
-	for ((i=0; i<${11}; i++)); do
+	for ((i=0; i<${13}; i++)); do
         	jobstate=`myqstat | grep ${id[$i]}` # check job status
 		status=`echo $jobstate | awk -F' ' '{print $5}'`
 		if [ "$status" == "C" ]; then
@@ -106,5 +108,5 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 
 # ----------------------- clean up ------------------------
 
-# join PIV files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/merge_imgs.py $(printf '%s.rho_b.img' "$fname") ${fname_i_rho[*]}
+# join img files
+/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/merge_imgs.py $(printf '%s.tracers.img' "$fname") ${fname_i_tracers[*]}

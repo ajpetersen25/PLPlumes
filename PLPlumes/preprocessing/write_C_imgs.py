@@ -28,21 +28,33 @@ def linear_off(x,a,b,x0):
 
 
 def convert_frame(params):
-    img,pq,pl,start_height,frame = params
+    img,pq,pl,start_height,frame,orientation = params
     img_frame = img.read_frame2d(frame).astype('float32')
     phi_frame = np.zeros(img_frame.shape).astype('float32')
-    pq = windowed_average(np.array(pq),250)
-    pl[:,0] = windowed_average(np.array(pl)[:,0],250)
-    pl[:,1] = windowed_average(np.array(pl)[:,1],250)
-    pl[:,2] = windowed_average(np.array(pl)[:,2],250)
-    for c in range(0,img.ix):
-        if c<start_height:
-            pass
-        else:
-            knot = pl[c,2]
-            mask = img_frame[:,c] > knot
-            phi_frame[:,c] = ~mask*quadratic(img_frame[:,c],pq[c]) + mask*linear_off(img_frame[:,c],pl[c,0],pl[c,1],pl[c,2])
-        
+    pq = windowed_average(np.array(pq),50)
+    pl[:,0] = windowed_average(np.array(pl)[:,0],50)
+    pl[:,1] = windowed_average(np.array(pl)[:,1],50)
+    pl[:,2] = windowed_average(np.array(pl)[:,2],50)
+    if orientation == 'vert':
+        h = img.iy
+        for c in range(0,h):
+            if c<start_height:
+                pass
+            else:
+                knot = pl[c,2]
+                mask = img_frame[c,:] > knot
+                phi_frame[c,:] = ~mask*quadratic(img_frame[c,:],pq[c]) + mask*linear_off(img_frame[c,:],pl[c,0],pl[c,1],pl[c,2])
+            
+    elif orientation =='horz':
+        h = img.ix
+        for c in range(0,h):
+            if c<start_height:
+                pass
+            else:
+                knot = pl[c,2]
+                mask = img_frame[:,c] > knot
+                phi_frame[:,c] = ~mask*quadratic(img_frame[:,c],pq[c]) + mask*linear_off(img_frame[:,c],pl[c,0],pl[c,1],pl[c,2])
+            
     rho_frame = phi_to_rho(phi_frame,2500,1.225)
     return rho_frame
 
@@ -60,6 +72,7 @@ def main():
     parser.add_argument('start_frame',nargs='?',default=0,type=int, help='Frame to start separation from')
     parser.add_argument('end_frame',nargs='?', default=0,type=int, help='Number of frames to separate')
     parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for node_separate')
+    parser.add_argument('orientation',type=str,nargs='?',default='horz',help='orientation of images, input horz or vert as str as appropriate')
     args = parser.parse_args()
     img = imgio.imgio(args.img_file)
     if args.end_frame == 0:
@@ -75,7 +88,8 @@ def main():
                        repeat(pq,times=f_tot),
                        repeat(pl,times=f_tot),
                        repeat(args.start_height,times=f_tot),
-                       frames))
+                       frames,
+		               repeat(args.orientation,times=f_tot)))
     pool = multiprocessing.Pool(processes=args.cores)
     results = pool.map(convert_frame,objList)
     results = np.array(results)

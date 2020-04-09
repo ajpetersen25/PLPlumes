@@ -48,8 +48,8 @@ def main():
     else:
         end_frame = args.end_frame
 
-    x = np.arange(piv.dx/2,img.ix-piv.dx/2,piv.dx)
-    y = np.arange(piv.dy/2,img.iy-piv.dy/2,piv.dy)
+    x = np.arange(piv.dx,img.ix-piv.dx,piv.dx)
+    y = np.arange(piv.dy,img.iy-piv.dy,piv.dy)
     slices = []
     for i in x:
        for j in y:

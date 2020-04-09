@@ -2,13 +2,11 @@
 # PIV cross-correlation code 
 if [[ $1 == '-h' ]]; then
 echo -e "\nusage: python plume_piv.py [-h]
-                     img_file p_quad p_lin start_height start_frame end_frame cores
-                     queue walltime pmem n_jobs orientation
+                     piv_file start_frame end_frame cores
+                     queue walltime pmem n_jobs
+
 positional arguments: (all are required)
-  img_file              IMG filename for converted to bulk density
-  p_quad                txt file of fits for quadratic part of conversion
-  p_lin                 txt file of fits for linear part of conversion
-  start_height          column (height) to start conversion at
+  piv_file              PIV filename
   start_frame           start frame for piv
   end_frame             end frame for piv
   cores                 number of cores to use per job
@@ -31,41 +29,47 @@ username, run 'qselect -u \$USER | xargs qdel'.\n"
 elif ! [ -f "$1" ]; then
     echo "[ERROR] file $1 not found"
     exit 0
-fi
 
+fi
 working_dir=`pwd`
+
+# --------------- submit parallel PIV jobs --------------------
+#echo {${5}'*.tif'}
 
 # find the number of image frames per core
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${6} - ${5}))
-pairs_per_job=$(($pairs / ${11}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${11}-1)))
-# submit part of the img file to each core as a separate job for PIV processing
-fname=$1
-flen=${#fname}-4
-fname=${fname[@]:0:$flen}
+pairs=$((${3} - ${2}-1))
+pairs_per_job=$(($pairs/${8}))
+pairs_last_job=$(($pairs - $pairs_per_job * (${8}-1)))
 
-for ((i=0; i<${11}; i++)); do
+
+# submit part of the piv file to each core as a separate job for PIV processing
+pname=$1
+plen=${#pname}-4
+pname=${pname[@]:0:$plen}
+
+#echo ${pairs} ${pairs_per_job} ${pairs_last_job}
+for ((i=0; i<${8}; i++)); do
 	# create symlinks for img file for each job to use
-	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
-	fname_i_rho[$i]=$(printf '%s.c%04d.rho_b.img' "$fname" "$i")
-	#if [ -f ${fname_i[$i]} ]; then
-		#rm ${fname_i[$i]}
-		#echo ${fname_i[$i]}
-	#fi
-	ln -s $1 ${fname_i[$i]} 
-	
+	pname_i[$i]=$(printf '%s.c%04d.piv' "$pname" "$i")
+	pname_i_flct[$i]=$(printf '%s.c%04d.flct.piv' "$pname" "$i")
+
+    if [ -f ${pname_i[$i]} ]; then
+		rm ${pname_i[$i]}
+	fi
+	ln -s $1 ${pname_i[$i]} 
+
 	# specify start frame and end frame for each job
-    start=$(($i * ${pairs_per_job} + ${5}))
-    if [[ $i == $((${11}-1)) ]]; then
+    start=$(($i * ${pairs_per_job} + ${2}))
+    if [[ $i == $((${8}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${i} ${start} ${end} ${fname_i_rho[$i]} 
-    id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${fname_i[$i]},p_quad=${2},p_lin=${3},start_height=${4},start_frame=${start},end_frame=${end},cores=${7},orientation=${12} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/write_C_imgs.sh`
+    #echo ${i} ${start} ${end} ${fname_i[$i]} ${pname_i[$i]}
+    id[$i]=`qsub -q ${5} -l walltime=${6},nodes=1:ppn=${4},pmem=${7} -v piv_file=${pname_i[$i]},start_frame=${start},end_frame=${end},cores=${4} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/fluct_vel.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -77,7 +81,7 @@ alias myqstat='qstat | grep $me'
 
 # count number of jobs complete
 no_complete=0
-for ((i=0; i<${11}; i++)); do
+for ((i=0; i<${8}; i++)); do
 	jobstate=`myqstat | grep ${id[$i]}` # check job status
 	status=`echo $jobstate | awk -F' ' '{print $5}'`
 	if [ "$status" == "C" ]; then
@@ -88,9 +92,9 @@ counter=0
 aniwait=("|" "/" "-" "\\")
 echo -n ${aniwait[$counter]}
 
-while [ $no_complete -lt ${11} ]; do  # while not all jobs are complete
+while [ $no_complete -lt ${8} ]; do  # while not all jobs are complete
 	no_complete=0
-	for ((i=0; i<${11}; i++)); do
+	for ((i=0; i<${8}; i++)); do
         	jobstate=`myqstat | grep ${id[$i]}` # check job status
 		status=`echo $jobstate | awk -F' ' '{print $5}'`
 		if [ "$status" == "C" ]; then
@@ -107,4 +111,9 @@ echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
 # ----------------------- clean up ------------------------
 
 # join PIV files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/merge_imgs.py $(printf '%s.rho_b.img' "$fname") ${fname_i_rho[*]}
+/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.flct.piv' "$pname") ${pname_i_flct[*]}
+
+# delete job files and symlinks
+#rm `echo "$fname.c*"` 
+#rm `echo "*.sh.o* *.sh.e*"`
+ 

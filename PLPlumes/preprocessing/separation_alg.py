@@ -56,7 +56,7 @@ def separation_alg(params):
 
     # initialization of particle and tracer images
     particles = np.zeros(f1.shape,dtype=image_bitdepth)
-    noise_particles = np.zeros(f1.shape,dtype=image_bitdepth)
+    #noise_particles = np.zeros(f1.shape,dtype=image_bitdepth)
     tracers = copy.deepcopy(frame)
 
     """# mean and std deviation for filling particles in
@@ -76,7 +76,7 @@ def separation_alg(params):
         for yi in range(0,len(y)-1):
             slices.append((slice(y[yi],y[yi]+fill_kernel),slice(x[xi],x[xi+1])))
     for s in slices:
-        mu = np.mean(frame[s])
+t        mu = np.mean(frame[s])
         sigma = np.std(frame[s])
         fillarray[s] = np.abs(np.rint(np.random.normal(mu,sigma,frame[s].shape)))"""
    
@@ -96,16 +96,16 @@ def separation_alg(params):
         img_object = f1[f1slice]*(f1lab[f1slice]==(s+1))
         obj_size = np.count_nonzero(img_object)
         # threshold objects based on size and then mean intensity
-        if obj_size > min_size:
+        if obj_size >= min_size:
             
-            obj_int = np.sum((img_object))/obj_size
-            if obj_int < particle_threshold:
-                noise_particles[f1slice] = img_object #TODO, should noise_particles always be removed??
-            elif obj_int > particle_threshold:
-                particles[f1slice] = img_object
+            #obj_int = np.sum((img_object))/obj_size
+            #if obj_int < particle_threshold:
+                #noise_particles[f1slice] = img_object #TODO, should noise_particles always be removed??
+            #elif obj_int > particle_threshold:
+            particles[f1slice] = img_object
     # dilate paticles to remove any residual particle noise in the form of halos
-    particles_mask = morph.binary_dilation(particles+noise_particles,structure = kernel)
-    del particles, noise_particles
+    particles_mask = morph.binary_dilation(particles,structure = kernel)
+    del particles
     tracers_mask = ~particles_mask
     # use mask on raw image to generate tracers only
     tracers = tracers*tracers_mask

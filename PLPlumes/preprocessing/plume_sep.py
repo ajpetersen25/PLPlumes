@@ -119,7 +119,8 @@ class sep_obj:
         """
         print('Total frames to discriminate : %d' % (self.end_frame - self.start_frame))
     
-        #d=datetime.now()
+        d=datetime.now()
+        self.timg.comment = "%s\n%s %s \npypiv git sha: @SHA@\n%s\n\n" % (getpass.getuser(), os.path.basename(__file__), self.img.file_name, d.strftime("%a %b %d %H:%M:%S %Y")) + str(self.img.comment,'utf-8')
 
         #self.pimg.write_header()
         self.timg.write_header()
@@ -129,7 +130,6 @@ class sep_obj:
         
         ft = open('%s' % self.timg.file_name, 'ab')
         ft.seek(self.timg.header_length)
-
         param2 = self.labeling_threshold
         param3 = self.particle_threshold
         param4 = self.min_size
@@ -152,15 +152,9 @@ class sep_obj:
         #all_frame_masks,all_U,all_W = pool.map(mask_vframe,objList)
         tracer_images = pool.map(separation_alg.separation_alg,objList)
         tracer_images = np.array(tracer_images)
-        print('saving...')
-        for i in progress.bar(list(range(self.start_frame,self.end_frame))):
-
-            ft.write(tracer_images[i,:,:].astype(dtype=self.timg.type))
-
-        #fp.close()
-        ft.close()    
-        #print('Finished: written %s' % self.pimg.file_name)
-        print('Finished: written %s' % self.timg.file_name)
+ 
+        for f in range(0,f_tot):
+            self.timg.write_frame(np.flipud(tracer_images[f,:,:]))
 
     def gen_comment(self):
         """

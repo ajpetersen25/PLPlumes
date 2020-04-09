@@ -47,6 +47,10 @@ def mask_vframe(params):
                 mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
             else:
                 mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
+    #for r in range(mask.shape[0]):
+    #    for c in range(mask.shape[1]):
+    #        if piv.read_frame2d(0)[1][r,c] < 1:
+    #            mask[r,c] = 0
 
     return(np.flipud(mask))
 
@@ -87,7 +91,7 @@ def main():
     # start up parallel pool
 
     x = np.arange(piv.dx/2,img.ix-piv.dx/2,piv.dx)
-    y = np.arange(piv.dy/2,img.iy-piv.dy/2,piv.dy)
+    y = np.arange(piv.dy,img.iy-piv.dy/2,piv.dy)
     slices = []
     for i in x:
        for j in y:

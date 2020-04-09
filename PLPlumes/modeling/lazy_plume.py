@@ -9,7 +9,7 @@ Model adapted from T.S. van den Bremer & G.R. Hunt
 from scipy.integrate import solve_ivp
 import numpy as np
 
-def f(z,G,Gamma_0):
+def lazy_func(z,G,Gamma_0):
     #G = G.astype('complex')
     dGdz = G*(1-G)*np.sqrt(Gamma_0/G)*((1-G)/(1-Gamma_0))**(3/10)
     return np.real(dGdz)
@@ -29,7 +29,7 @@ def lazy_plume_model(z,r0,rho_a,rho_p,beta_0,wp0,alpha=0.03):
     Delta_0 = (1-rho_a/rho_b0)/(rho_a/rho_b0)
     Gamma_0 = (5*9.81*(1-rho_b0/rho_a)*(r0)*np.sqrt(rho_b0/rho_a))/(8*alpha*-(wp0)*2*(rho_b0/rho_a))    
     zeta = 4*alpha*z/(r0)
-    sol = solve_ivp(lambda z,G: f(z,G,Gamma_0), [zeta[0],zeta[-1]],[Gamma_0],t_eval=zeta)
+    sol = solve_ivp(lambda z,G: lazy_func(z,G,Gamma_0), [zeta[0],zeta[-1]],[Gamma_0],t_eval=zeta)
     #w = np.real(wp0*np.sqrt(Gamma_0/(sol.y.astype('complex')))*((1-(sol.y.astype('complex')))/(1-Gamma_0))**(1/10))
     #r = np.real(r0*np.sqrt((sol.y)/Gamma_0)*((1-Gamma_0)/(1-(sol.y.astype('complex'))))**(3/10))
     #Delta = np.real(Delta_0*np.sqrt(Gamma_0/(sol.y.astype('complex')))*np.sqrt((1-(sol.y.astype('complex')))/(1-Gamma_0)))

@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 31 12:53:32 2020
+
+@author: ajp25
+"""
+
+
+import numpy as np
+import h5py
+import argparse
+from datetime import datetime
+import tables
+def main():
+    '''Join hdf5 files together'''
+    parser = argparse.ArgumentParser(description='Program to join HDF5 files', formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('output_file', type=str, help='Name of output HDF5 file')
+    parser.add_argument('input_files', nargs='+', help='Name of HDF5 files to join')
+    args = parser.parse_args()
+    #print(args.input_files)
+    h5 = h5py.File(args.output_file,'a')
+    frame_group = h5.create_group('frames')
+    for i in range(0,len(args.input_files)):
+        h_temp = h5py.File(args.input_files[i],'r')
+        for key in h_temp.keys():
+            for k in h_temp[key].keys():
+                h5['frames'].create_dataset(k,data=h_temp[key][k][:])
+        h_temp.close()
+        del h_temp
+    h5.close()
+    tables.file._open_files.close_all()
+    
+if __name__ == "__main__":
+  main() 

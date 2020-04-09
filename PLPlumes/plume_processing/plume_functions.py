@@ -4,7 +4,9 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter
 from scipy.ndimage import median_filter
-from skimage.morphology import dilation
+from skimage.morphology import dilation,square
+import scipy.ndimage.measurements as measurements
+import scipy.ndimage.morphology as morph
 import cv2
 from scipy import stats
 
@@ -71,6 +73,11 @@ def esd1d(signal, freq, windows, overlap=0.5):
 
     return np.concatenate((f.reshape(len(f), 1), E2.reshape(len(E2), 1)), axis=1)
 
+def convergence(arr):
+    arr_mean = []
+    for f in range(0,len(arr)):
+        arr_mean.append(np.nanmean(arr[0:f+1]))
+    return arr_mean
 
 def windowed_average(a, kernel_size, mode='same'):
     k = np.ones((kernel_size),dtype=int)
@@ -93,7 +100,7 @@ def phi_to_rho(phi_arr,rho_p,rho_a):
 def rho_to_phi(rho_arr,rho_p,rho_a):
     return ((rho_arr-rho_a)/(rho_p-rho_a))
 
-def plume_outline(frame,kernel,dilation_iterations,threshold,med_filt_size):
+def plume_outline(frame,kernel_size,dilation_iterations,threshold,med_filt_size,orientation='horz'):
     """
     img_outline = frame>threshold
     contours, hierarchy =   cv2.findContours(img_outline.copy().astype('uint8'),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
@@ -103,16 +110,35 @@ def plume_outline(frame,kernel,dilation_iterations,threshold,med_filt_size):
 
     return plume_contour"""
     frame_d = frame.copy()
-    i=1
+    i=0
+    kernel = square(kernel_size)
     while i<dilation_iterations:
         frame_d = dilation(frame_d,kernel)
         i+=1
     frame_db = frame_d > threshold
     frame_mask = median_filter(frame_db,med_filt_size)
+    f1lab, f1num = measurements.label(frame_mask)
+    f1slices = measurements.find_objects(f1lab)
+    obj_sizes = []
+    img_objects = []
+    for s, f1slice in enumerate(f1slices):
+        # remove overlapping label objects from current slice
+        img_object = ((f1lab==(s+1)))
+        obj_size = (np.count_nonzero(img_object))
+        obj_sizes.append(obj_size)
+        img_objects.append(img_object)
+    frame_mask = img_objects[np.where(obj_sizes==np.max(obj_sizes))[0][0]]
     plume_outline_pts = []
-    for col in range(0,frame.shape[1]):
-        rows = np.where(np.diff(frame_db)==1)[0]
-        plume_outline_pts.append([np.array([row,col]) for row in rows])
+    if orientation == 'horz':
+        for col in range(0,frame.shape[1]):
+            row = np.where(np.diff(frame_mask[:,col])==1)[0][0]
+            plume_outline_pts.append(np.array([row,col]))
+    elif orientation == 'vert':
+        for col in range(0,frame.shape[0]):
+            row = np.where(np.diff(frame_mask[:,col])==1)[0][1]
+            plume_outline_pts.append(np.array([row,col]))
+        
+    return plume_outline_pts
 
 def gaussian_plume_width():
     """ based on the near half of the plume image, fit a gaussian"""

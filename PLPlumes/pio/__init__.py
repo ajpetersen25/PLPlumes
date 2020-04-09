@@ -1,1 +1,1 @@
-__all__ = ["image_io","pivio","imgio"]
+__all__ = ["pivio","imgio"]
