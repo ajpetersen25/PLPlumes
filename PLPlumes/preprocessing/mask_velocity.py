@@ -38,15 +38,17 @@ def mask_vframe(params):
     img_frame = img.read_frame2d(frame)
     # initialize mask frame
     mask = piv.read_frame2d(frame)[0]
+    mask[mask==4]=1
+    mask[mask!=1]=0
     # loop through all interrogation windows, looking at which meet threshold criteria
     # elements in the frame mask array which meet this criteria are set to 0
 
-    for s in slices:
-            window = img_frame[s]
-            if np.sum(window>threshold)/(step[0]*step[1]) > window_threshold and mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] ==1:
-                mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
-            else:
-                mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
+    #for s in slices:
+    #        window = img_frame[s]
+    #        if np.sum(window>threshold)/(step[0]*step[1]) > window_threshold and mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] ==1:
+    #            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
+    #        else:
+    #            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
     #for r in range(mask.shape[0]):
     #    for c in range(mask.shape[1]):
     #        if piv.read_frame2d(0)[1][r,c] < 1:
@@ -90,8 +92,8 @@ def main():
         end_frame = args.end_frame
     # start up parallel pool
 
-    x = np.arange(piv.dx/2,img.ix-piv.dx/2,piv.dx)
-    y = np.arange(piv.dy,img.iy-piv.dy/2,piv.dy)
+    x = np.arange(piv.dx,img.ix-piv.dx,piv.dx)
+    y = np.arange(piv.dy,img.iy-piv.dy,piv.dy)
     slices = []
     for i in x:
        for j in y:

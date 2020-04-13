@@ -56,7 +56,7 @@ def main():
     ue_num[np.where(ue_num==0)[0]] = np.nan
     ue_mean = ue_sum/ue_num
 
-    #np.savetxt(root+'.mean.txt',ue_mean,delimiter='\t')
+    np.savetxt(root+'.mean.txt',ue_mean,delimiter='\t')
     
 
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))

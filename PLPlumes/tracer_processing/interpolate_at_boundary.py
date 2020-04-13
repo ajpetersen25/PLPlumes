@@ -200,10 +200,7 @@ def main():
     
     piv_root,piv_ext = os.path.splitext(args.piv_file)
     h5 = h5py.File(piv_root+'.u_e.hdf5','a')
-    if 'frames' in h5.keys():
-        pass
-    else:
-        frame_group = h5.create_group('frames')
+    frame_group = h5.create_group('frames')
     
     
     objList = list(zip(repeat(img,times=f_tot),
@@ -222,7 +219,9 @@ def main():
     for ff,f in enumerate(frames):
         h5['frames'].create_dataset('frame_%06d' %f,data=results[ff])
         
+    h5.close()
     tables.file._open_files.close_all()
+    
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))
     
 if __name__ == "__main__":
