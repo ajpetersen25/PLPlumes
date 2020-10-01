@@ -75,7 +75,7 @@ def main():
     piv2.nt = f_tot
     piv2.write_header()
     for f in range(0,f_tot):
-        data = [results[f][0].flatten(),results[f][1].flatten(),results[f][2].flatten()]
+        data = [results[f][0].flatten(),results[f][1].flatten(),-results[f][2].flatten()]
         piv2.write_frame(data)
         
     print(('[FINISHED]: %f seconds elapsed' %(time.time()-tic)))

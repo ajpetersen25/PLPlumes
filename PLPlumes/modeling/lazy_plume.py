@@ -14,7 +14,7 @@ def lazy_func(z,G,Gamma_0):
     dGdz = G*(1-G)*np.sqrt(Gamma_0/G)*((1-G)/(1-Gamma_0))**(3/10)
     return np.real(dGdz)
 
-def lazy_plume_model(z,r0,rho_a,rho_p,beta_0,wp0,alpha=0.03):
+def lazy_plume(z,r0,rho_a,rho_p,beta_0,wp0,alpha=0.03,Gamma_0=None):
     """# Initial parameters
     z -- vector of streamwise distances from plume outlet 
             (zeta = 4*alpha*z/r0)
@@ -25,9 +25,17 @@ def lazy_plume_model(z,r0,rho_a,rho_p,beta_0,wp0,alpha=0.03):
     wp0 --  initial plume velocity
     alpha -- entrainment ratio
     """
-    rho_b0 = rho_p*beta_0+rho_a*(1-beta_0)
+    rho_b0 = rho_p#*beta_0+rho_a*(1-beta_0)
     Delta_0 = (1-rho_a/rho_b0)/(rho_a/rho_b0)
-    Gamma_0 = (5*9.81*(1-rho_b0/rho_a)*(r0)*np.sqrt(rho_b0/rho_a))/(8*alpha*-(wp0)*2*(rho_b0/rho_a))    
+    Q = 2*wp0*(r0)**2
+    phi_b = beta_0*(rho_a-rho_p)/rho_a*-9.81
+    F = 2*wp0*phi_b*(r0)**2
+    M = 2*wp0**2*(r0)**2
+    if Gamma_0 is None:
+        Gamma_0 = (5*-9.81*(1-rho_b0/rho_a)*(r0)*np.sqrt(rho_b0/rho_a))/(8*alpha*(wp0)*2*(rho_b0/rho_a))   
+        #Gamma_0 = (5*(Q)**2*F)/(8*alpha*np.sqrt(np.pi)*M**(5/2))
+    else:
+        Gamma_0 = Gamma_0
     zeta = 4*alpha*z/(r0)
     sol = solve_ivp(lambda z,G: lazy_func(z,G,Gamma_0), [zeta[0],zeta[-1]],[Gamma_0],t_eval=zeta)
     #w = np.real(wp0*np.sqrt(Gamma_0/(sol.y.astype('complex')))*((1-(sol.y.astype('complex')))/(1-Gamma_0))**(1/10))

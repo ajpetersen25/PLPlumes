@@ -68,7 +68,7 @@ def find_points(img,threshold,min_size=9):
     
 def pick_shared_pts(imCrop,cal_points,pts):
     plt.figure()
-    plt.pcolormesh((imCrop),cmap=cm.gray)
+    plt.pcolormesh((imCrop),cmap='gray')
     plt.plot(cal_points[:,2],cal_points[:,3],'rx')
     print('Choose shared points between images')
     x=[]
@@ -147,7 +147,7 @@ def check_threshold(im):
                 validt = 0
         img[img<t] = 0
         plt.figure();
-        plt.pcolormesh(img,cmap=cm.gray)
+        plt.pcolormesh(img,cmap='gray')
         plt.show()
         g = input('Accept thresholding? (y/n) \n')
         to_continue = 0
@@ -167,7 +167,7 @@ def calc_stitch(T=None):
 
     if T is None:
         cal_img = input('Enter path to right/top calibration image: ')
-        cal_img1 = load_image(cal_img)
+        cal_img1 = load_image2(cal_img)
         del cal_img
         #### remove hardcoding ####
         pts=6
@@ -215,7 +215,7 @@ def main():
     parser.add_argument('-s','--save_path',type=str,nargs=1,help = 'directory in which to save panorama images')
     parser.add_argument('-t','--transform', type=str,nargs=1,help = 'path to transform matrix .txt file')
     args = parser.parse_args()
-    if len(args.transform)==0:
+    if args.transform is None:
         T,alphas,border = calc_stitch()
         np.savetxt(args.save_path[0]+'T_matrix.txt',T)
         #np.savetxt(args.save_path[0]+'alpha_matrix.txt',alphas)
@@ -245,4 +245,5 @@ def main():
         #cv2.imwrite(args.save_path[0]+'pano_%06d.tif' %i,panorama)
         skimage.io.imsave(args.save_path[0]+'pano_%06d.tiff' %i, panorama, plugin='tifffile')
     print('Finished in %0.3f s' %(time.time()-d))
-if __name__ == "__main__
+if __name__ == "__main__":
+    main()

@@ -81,8 +81,8 @@ def convergence(arr):
 
 def windowed_average(a, kernel_size, mode='same'):
     k = np.ones((kernel_size),dtype=int)
-    window_sum = convolve(a,k,mode)
-    window_count = convolve(np.ones(a.shape, dtype=bool),k,mode)
+    window_sum = np.convolve(a,k,mode)
+    window_count = np.convolve(np.ones(a.shape, dtype=bool),k,mode)
     return np.array(window_sum/window_count)
 
 def gaussian(x, a, x0, sigma, offset):

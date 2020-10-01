@@ -17,7 +17,7 @@ def pure_plume_model(z,r_0,rho_a,rho_p,beta_0,wp0,alpha=0.03):
     wp0 --  initial plume velocity
     alpha -- entrainment ratio
     """
-    rho_b0 = rho_p*beta_0+rho_a*(1-beta_0)
+    rho_b0 = rho_p#rho_p*beta_0+rho_a*(1-beta_0)
     Delta_0 = (1-rho_a/rho_b0)/(rho_a/rho_b0)
     r_pnb = r_0*3/10*(10/3+(4*alpha*z)/r_0)
     w_pnb = wp0*(10/3)**(1/3)*(10/3+(4*alpha*z)/(r_0))**(-1/3)

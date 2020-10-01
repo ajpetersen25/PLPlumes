@@ -43,12 +43,12 @@ def mask_vframe(params):
     # loop through all interrogation windows, looking at which meet threshold criteria
     # elements in the frame mask array which meet this criteria are set to 0
 
-    #for s in slices:
-    #        window = img_frame[s]
-    #        if np.sum(window>threshold)/(step[0]*step[1]) > window_threshold and mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] ==1:
-    #            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
-    #        else:
-    #            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
+    for s in slices:
+            window = img_frame[s]
+            if np.sum(window>threshold)/(step[0]*step[1]) > window_threshold and mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] ==1:
+                mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
+            else:
+                mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
     #for r in range(mask.shape[0]):
     #    for c in range(mask.shape[1]):
     #        if piv.read_frame2d(0)[1][r,c] < 1:

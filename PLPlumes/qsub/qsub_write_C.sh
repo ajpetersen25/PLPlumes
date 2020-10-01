@@ -39,15 +39,15 @@ working_dir=`pwd`
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${6} - ${5}))
-pairs_per_job=$(($pairs / ${11}))
-pairs_last_job=$(($pairs - $pairs_per_job * (${11}-1)))
+pairs=$((${5} - ${4}))
+pairs_per_job=$(($pairs / ${10}))
+pairs_last_job=$(($pairs - $pairs_per_job * (${10}-1)))
 # submit part of the img file to each core as a separate job for PIV processing
 fname=$1
 flen=${#fname}-4
 fname=${fname[@]:0:$flen}
 
-for ((i=0; i<${11}; i++)); do
+for ((i=0; i<${10}; i++)); do
 	# create symlinks for img file for each job to use
 	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
 	fname_i_rho[$i]=$(printf '%s.c%04d.rho_b.img' "$fname" "$i")
@@ -58,14 +58,14 @@ for ((i=0; i<${11}; i++)); do
 	ln -s $1 ${fname_i[$i]} 
 	
 	# specify start frame and end frame for each job
-    start=$(($i * ${pairs_per_job} + ${5}))
-    if [[ $i == $((${11}-1)) ]]; then
+    start=$(($i * ${pairs_per_job} + ${4}))
+    if [[ $i == $((${10}-1)) ]]; then
         end=$((${start}+${pairs_last_job}))
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${i} ${start} ${end} ${fname_i_rho[$i]} 
-    id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${fname_i[$i]},p_quad=${2},p_lin=${3},start_height=${4},start_frame=${start},end_frame=${end},cores=${7},orientation=${12} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/write_C_imgs.sh`
+    #echo ${i} ${start} ${end} ${fname_i_rho[$i]} ${pairs}
+    id[$i]=`qsub -q ${7} -l walltime=${8},nodes=1:ppn=${6},pmem=${9} -v img_file=${fname_i[$i]},p_lin=${2},start_height=${3},start_frame=${start},end_frame=${end},cores=${6},orientation=${11} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/write_C_imgs.sh`
 done
 
 # ----------------- wait for jobs to finish --------------------
@@ -77,7 +77,7 @@ alias myqstat='qstat | grep $me'
 
 # count number of jobs complete
 no_complete=0
-for ((i=0; i<${11}; i++)); do
+for ((i=0; i<${10}; i++)); do
 	jobstate=`myqstat | grep ${id[$i]}` # check job status
 	status=`echo $jobstate | awk -F' ' '{print $5}'`
 	if [ "$status" == "C" ]; then
@@ -88,9 +88,9 @@ counter=0
 aniwait=("|" "/" "-" "\\")
 echo -n ${aniwait[$counter]}
 
-while [ $no_complete -lt ${11} ]; do  # while not all jobs are complete
+while [ $no_complete -lt ${10} ]; do  # while not all jobs are complete
 	no_complete=0
-	for ((i=0; i<${11}; i++)); do
+	for ((i=0; i<${10}; i++)); do
         	jobstate=`myqstat | grep ${id[$i]}` # check job status
 		status=`echo $jobstate | awk -F' ' '{print $5}'`
 		if [ "$status" == "C" ]; then

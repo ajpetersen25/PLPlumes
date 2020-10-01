@@ -26,15 +26,19 @@ def quadratic(x,a):
 def linear_off(x,a,b,x0):
     return b+a*(x-x0)
 
+def linear(x,a,b):
+    return a*x+b
 
 def convert_frame(params):
-    img,pq,pl,start_height,frame,orientation = params
+    img,pl,start_height,frame,orientation = params
     img_frame = img.read_frame2d(frame).astype('float32')
     phi_frame = np.zeros(img_frame.shape).astype('float32')
-    pq = windowed_average(np.array(pq),50)
-    pl[:,0] = windowed_average(np.array(pl)[:,0],50)
-    pl[:,1] = windowed_average(np.array(pl)[:,1],50)
-    pl[:,2] = windowed_average(np.array(pl)[:,2],50)
+    pl = np.array(pl)
+    pl[:,0] = windowed_average(pl[:,0],25)
+    pl[:,1] = windowed_average(pl[:,1],25)
+    #pl[:,0] = windowed_average(np.array(pl)[:,0],1)
+    #pl[:,1] = windowed_average(np.array(pl)[:,1],1)
+    #pl[:,2] = windowed_average(np.array(pl)[:,2],1)
     if orientation == 'vert':
         h = img.iy
         for c in range(0,h):
@@ -51,10 +55,11 @@ def convert_frame(params):
             if c<start_height:
                 pass
             else:
-                knot = pl[c,2]
-                mask = img_frame[:,c] > knot
-                phi_frame[:,c] = ~mask*quadratic(img_frame[:,c],pq[c]) + mask*linear_off(img_frame[:,c],pl[c,0],pl[c,1],pl[c,2])
-            
+                #knot = pl[c,2]
+                #mask = img_frame[:,c] > knot
+                #phi_frame[:,c] = ~mask*quadratic(img_frame[:,c],pq[c]) + mask*linear_off(img_frame[:,c],pl[c,0],pl[c,1],pl[c,2])
+                phi_frame[:,c] = linear(img_frame[:,c],pl[c,0],pl[c,1])
+    phi_frame[phi_frame < 0] = 0
     rho_frame = phi_to_rho(phi_frame,2500,1.225)
     return rho_frame
 
@@ -66,7 +71,7 @@ def main():
                description='Program to save concentration .imgs',
                formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('img_file',type=str, help='Name of .img file')
-    parser.add_argument('p_quad',type=str,help='path to .txt file containing fit parameters for initial quadratic function')
+    #parser.add_argument('p_quad',type=str,help='path to .txt file containing fit parameters for initial quadratic function')
     parser.add_argument('p_lin',type=str,help='path to .txt file containing fit parameters for linear function')
     parser.add_argument('start_height',type=int,nargs='?',default=0,help='frame column to start conversion at')
     parser.add_argument('start_frame',nargs='?',default=0,type=int, help='Frame to start separation from')
@@ -80,12 +85,13 @@ def main():
     else:
         end_frame = args.end_frame
     frames = np.arange(args.start_frame,end_frame)
-    print(args.p_quad,args.p_lin)
-    pq = np.loadtxt(args.p_quad)
+    print(frames[0],frames[-1])
+    #print(args.p_quad,args.p_lin)
+    #pq = np.loadtxt(args.p_quad)
     pl = np.loadtxt(args.p_lin)
     f_tot = len(frames)
     objList = list(zip(repeat(img,times=f_tot),
-                       repeat(pq,times=f_tot),
+                       #repeat(pq,times=f_tot),
                        repeat(pl,times=f_tot),
                        repeat(args.start_height,times=f_tot),
                        frames,

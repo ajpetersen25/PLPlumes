@@ -23,8 +23,8 @@ import os
 def fluct_masked(params):
     piv,ave_mvel,f = params
 
-    fluct_u = (piv.read_frame2d(f)[1] - ave_mvel[1])
-    fluct_v = (piv.read_frame2d(f)[2] - ave_mvel[2])
+    fluct_u = (piv.read_frame2d(f)[1] - ave_mvel.read_frame2d(0)[1])
+    fluct_v = (piv.read_frame2d(f)[2] - ave_mvel.read_frame2d(0)[2])
     mask = piv.read_frame2d(f)[0].astype('bool')
 
 
@@ -38,6 +38,7 @@ def main():
                description='Program for parallel plume piv',
                formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('piv_file',type=str, help='Name of .piv file')
+    parser.add_argument('avepiv_file',type=str, help='Name of .piv file')
     parser.add_argument('start_frame',nargs='?',default=0,type=int, help='Frame to start separation from')
     parser.add_argument('end_frame',nargs='?', default=0,type=int, help='Number of frames to separate')
     parser.add_argument('cores',type=int,nargs='?',default=1,help='Optional - Force number of cores for node_separate')
@@ -48,7 +49,7 @@ def main():
     else:
         end_frame = args.end_frame
 
-    avg = average_masked_vel(piv)
+    avg = pivio.pivio(args.avepiv_file)
            
     frames = np.arange(args.start_frame,end_frame)
     f_tot = len(frames)
@@ -69,7 +70,7 @@ def main():
     piv2.nt = f_tot
     piv2.write_header()
     for f in range(0,f_tot):
-        data = [results[f][0].flatten(),results[f][1].flatten(),results[f][2].flatten()]
+        data = [results[f][0].flatten(),results[f][1].flatten(),-results[f][2].flatten()]
         piv2.write_frame(data)
     
 

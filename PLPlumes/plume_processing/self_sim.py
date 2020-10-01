@@ -23,7 +23,6 @@ from matplotlib import rc
 rc('text', usetex=True)
 
 from PLPlumes.plume_processing.plume_functions import windowed_average
-from PLPlumes import cmap_sunset
 
 #%%
 upper_cal = 1/3475.93 #m/pix
@@ -91,8 +90,8 @@ dn45_lower_piv2 = pivdn32_lower2.read_frame2d(0)
 # take velocity profiles at certain locations along streamwise distance of plume and fit Gaussian over
 # full width (views 1 & 2) or reflecting across half width. Then plot W/W_max vs r/r_1/2
 z2 = ((np.arange(2560,2560*2)-outlet)*lower_cal-overlap)/D0
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=(z2[-1]))
+cs = plt.get_cmap('inferno')
+cNorm = colors.Normalize(vmin=0,vmax=70)
 scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
 f,ax  = plt.subplots(figsize=(5,5))
 #View 1 centerline velocity and r_1/2 location
@@ -100,7 +99,7 @@ prof_locs = [25,35,45,55,65,75,85,95]
 W = ((dn32_upper_piv1[1]*R[0,0] - dn32_upper_piv1[2]*R[0,1]) +(dn32_upper_piv2[1]*R[0,0] - dn32_upper_piv2[2]*R[0,1]))/2
 bin_s = 3
 for p in prof_locs:
-    w_prof = windowed_average(np.mean(W[:-1,p:p+bin_s],axis=1),3)
+    w_prof = windowed_average(np.mean(W[:-1,p:p+bin_s],axis=1),1)
     wmax_loc = np.where(w_prof==w_prof.max())[0][0]
     data = np.flip(w_prof[0:wmax_loc])
     data = data
@@ -109,15 +108,15 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]))
-    
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]),linewidth=1)
+ax.plot(np.arange(0,20)/rhalf,gaussian(np.arange(-20,20)/rhalf,1,0,.8,0)[20:])
 
 #View 2 centerline velocity and r_1/2 location
 prof_locs = [10,20,30,40,50,60,70,80]
 W = (dn32_lower_piv1[1] + dn32_lower_piv2[1])/2
 
 for p in prof_locs:
-    w_prof = windowed_average(np.mean(W[:-1,p:p+bin_s],axis=1),3)
+    w_prof = windowed_average(np.mean(W[:-1,p:p+bin_s],axis=1),1)
     wmax_loc = np.where(w_prof==w_prof.max())[0][0]
     data = np.flip(w_prof[0:wmax_loc])
     data = data
@@ -126,7 +125,7 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]),linewidth=1)
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$W / W_{max}$',fontsize=20,labelpad=15)
 ax.tick_params(axis='both',which='major',labelsize=16);
@@ -142,9 +141,7 @@ ax.set_xlim(0,3);
 f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_W_dn32.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
  
     
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=(z2[-1]))
-scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
+
 f,ax  = plt.subplots(figsize=(5,5)) 
 prof_locs = [25,30,45,55,65,75,85,95]
 W = ((bidn32_upper_piv1[1]*R[0,0] - bidn32_upper_piv1[2]*R[0,1]) +(bidn32_upper_piv2[1]*R[0,0] - bidn32_upper_piv2[2]*R[0,1]))/2
@@ -159,7 +156,7 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]),linewidth=1)
     
 
 #View 2 centerline velocity and r_1/2 location
@@ -176,7 +173,7 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]),linewidth=1)
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$W / W_{max}$',fontsize=20,labelpad=15)
 ax.tick_params(axis='both',which='major',labelsize=16);
@@ -191,9 +188,6 @@ yticks[0].label1.set_visible(False);
 f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_W_bidn32.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
 
 
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=(z2[-1]))
-scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
 f,ax  = plt.subplots(figsize=(5,5))    
 prof_locs = [25,35,45,55,65,75,85,95]
 W = ((dn45_upper_piv1[1]*R[0,0] - dn45_upper_piv1[2]*R[0,1]) +(dn45_upper_piv2[1]*R[0,0] - dn45_upper_piv2[2]*R[0,1]))/2
@@ -208,7 +202,7 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv1[int((p+p+bin_s)/2)]),linewidth=1)
     
 
 #View 2 centerline velocity and r_1/2 location
@@ -225,7 +219,7 @@ for p in prof_locs:
     a = b-1
     interp = np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])
     rhalf = a +(np.where(np.interp(np.arange(a,b,1e-6),[a,b],[data[a],data[b]])<=.5*np.max(data))[0][0]*1e-6)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(zpiv2[int((p+p+bin_s)/2)]),linewidth=1)
       
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$W / W_{max}$',fontsize=20,labelpad=15)
@@ -241,9 +235,7 @@ yticks[0].label1.set_visible(False);
 f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_W_dn45.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
 
 # single view
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=zpiv2[0],vmax=zpiv2[14])
-scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
+
 f2,ax2  = plt.subplots(figsize=(5,5))
 prof_locs = np.arange(5,15,1)
 W = (dn32_lower_piv1[1] + dn32_lower_piv2[1])/2
@@ -272,7 +264,7 @@ ax2.set_ylim(0,1.1);
 ax2.set_xlim(0,3);
 yticks = ax.yaxis.get_major_ticks();
 yticks[0].label1.set_visible(False);
-f2.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_W_dn32_subset.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
+#f2.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_W_dn32_subset.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
 
 #%% Self Similarity concentration
 # take concentration profiles at certain locations along streamwise distance of plume and fit Gaussian over
@@ -281,8 +273,8 @@ z2 = ((np.arange(2560,2560*2)-outlet)*lower_cal-overlap)/D0
 
 f,ax  = plt.subplots(figsize=(5,5))
 
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=z2[-1])
+cs = plt.get_cmap('inferno')
+cNorm = colors.Normalize(vmin=0,vmax=75)
 scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
 #dn32 upper view
 prof_locs = np.arange(600,2500,200)
@@ -300,7 +292,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
     
     
 
@@ -319,7 +311,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
 
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$C / C_{max}$',fontsize=20,labelpad=15)
@@ -338,9 +330,6 @@ f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim
 
 f,ax  = plt.subplots(figsize=(5,5))
 
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=z2[-1])
-scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
 #bidn32 upper view
 prof_locs = np.arange(800,2500,200)
 c = (np.flipud(bidn32_upper.read_frame2d(0))-1.225 + np.flipud(bidn32_upper2.read_frame2d(0))-1.225)/2
@@ -357,7 +346,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
     
     
 
@@ -376,7 +365,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
 
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$C / C_{max}$',fontsize=20,labelpad=15)
@@ -395,9 +384,7 @@ f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim
 
 f,ax  = plt.subplots(figsize=(5,5))
 
-cs = plt.get_cmap('sunset')
-cNorm = colors.Normalize(vmin=0,vmax=z2[-1])
-scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
+
 #dn45 upper view
 prof_locs = np.arange(600,2500,200)
 c = (np.flipud(dn45_upper.read_frame2d(0))-1.225 + np.flipud(dn45_upper2.read_frame2d(0))-1.225)/2
@@ -414,7 +401,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
     
     
 
@@ -433,7 +420,7 @@ for p in prof_locs:
     r = np.arange(0,len(data))
     rhalf = np.where(data <= .5*np.max(data))[0][0]
     rhalfs.append(rhalf)
-    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]))
+    ax.plot(r/rhalf,data/data.max(),color=scalarMap.to_rgba(hs[int((p+p+bin_s)/2)]),linewidth=1)
 
 xlab = ax.set_xlabel('$r / r_{1/2}$',fontsize=20,labelpad=15)
 ylab = ax.set_ylabel('$C / C_{max}$',fontsize=20,labelpad=15)
