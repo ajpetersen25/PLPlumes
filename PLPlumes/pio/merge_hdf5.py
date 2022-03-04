@@ -30,7 +30,11 @@ def main():
         h_temp = h5py.File(args.input_files[i],'r')
         for key in h_temp.keys():
             for k in h_temp[key].keys():
-                h5['frames'].create_dataset(k,data=h_temp[key][k][:])
+                #h5[key].create_dataset(k+'/frame_mask',data=h_temp[key][k]['frame_masks'][:])
+                h5[key].create_dataset(k+'/boundary_pts',data=h_temp[key][k]['boundary_pts'][:])
+                h5[key].create_dataset(k+'/uf_at_p',data=h_temp[key][k]['uf_at_p'][:])
+                h5[key].create_dataset(k+'/u_p',data=h_temp[key][k]['u_p'][:])
+                h5[key].create_dataset(k+'/n',data=h_temp[key][k]['n'][:])
         h_temp.close()
         del h_temp
     h5.close()

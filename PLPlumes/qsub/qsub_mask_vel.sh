@@ -78,51 +78,14 @@ for ((i=0; i<${11}; i++)); do
         end=$((${start}+${pairs_per_job}))
     fi
     #echo ${i} ${start} ${end} ${pname_i[$i]}
-    id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${1},piv_file=${pname_i[$i]},threshold=${3},window_threshold=${4},start_frame=${start},end_frame=${end},cores=${7} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mask_vel.sh`
+	#echo -e "\rNum cores used ${10}"
+	idlen=${#idtemp}
+	id[$i]=${idtemp[@]:20:$idlen}
+	
+    #id[$i]=`qsub -q ${8} -l walltime=${9},nodes=1:ppn=${7},pmem=${10} -v img_file=${1},piv_file=${pname_i[$i]},threshold=${3},window_threshold=${4},start_frame=${start},end_frame=${end},cores=${7} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mask_vel.sh`
+    idtemp=`sbatch --account=colettif --partition=${8} --time=${9} --ntasks=${7} --mem=${10} --chdir=$working_dir --output=out_files/slurm-%j.out --export=img_file=${1},piv_file=${pname_i[$i]},threshold=${3},window_threshold=${4},start_frame=${start},end_frame=${end},cores=${7} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/mask_vel.sh`
+    idlen=${#idtemp}
+	id[$i]=${idtemp[@]:20:$idlen}
 done
 
-# ----------------- wait for jobs to finish --------------------
 
-shopt -s expand_aliases
-sleep_time=30 # seconds
-me=`whoami`
-alias myqstat='qstat | grep $me'
-
-# count number of jobs complete
-no_complete=0
-for ((i=0; i<${11}; i++)); do
-	jobstate=`myqstat | grep ${id[$i]}` # check job status
-	status=`echo $jobstate | awk -F' ' '{print $5}'`
-	if [ "$status" == "C" ]; then
-                ((no_complete++))
-        fi
-done
-counter=0
-aniwait=("|" "/" "-" "\\")
-echo -n ${aniwait[$counter]}
-
-while [ $no_complete -lt ${11} ]; do  # while not all jobs are complete
-	no_complete=0
-	for ((i=0; i<${11}; i++)); do
-        	jobstate=`myqstat | grep ${id[$i]}` # check job status
-		status=`echo $jobstate | awk -F' ' '{print $5}'`
-		if [ "$status" == "C" ]; then
-                	((no_complete++))
-        	fi
-	done
-
-	sleep $sleep_time
-	((counter++))
-	echo -n -e "\r${aniwait[$counter%4]}"
-done
-echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
-
-# ----------------------- clean up ------------------------
-
-# join PIV files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/join_piv.py $(printf '%s.msk.piv' "$pname") ${pname_i_msk[*]}
-
-# delete job files and symlinks
-#rm `echo "$fname.c*"` 
-#rm `echo "*.sh.o* *.sh.e*"`
- 

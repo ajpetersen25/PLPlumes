@@ -13,10 +13,10 @@ from datetime import datetime
 from . import separation_alg
 import numpy as np
 from PLPlumes.pio import imgio
-from clint.textui import progress
+#from clint.textui import progress
 import multiprocessing
 from itertools import repeat
-
+import inspect
 
 
 ####################################################################
@@ -130,6 +130,7 @@ class sep_obj:
         
         ft = open('%s' % self.timg.file_name, 'ab')
         ft.seek(self.timg.header_length)
+        print(self.timg)
         param2 = self.labeling_threshold
         param3 = self.particle_threshold
         param4 = self.min_size
@@ -162,7 +163,7 @@ class sep_obj:
         """
         d = datetime.now()
         
-        return "%s\n%s %s %d %d %d %d \fmlib git sha: @VERSION@ git sha: @VERSION\n%s\n\n" % (getpass.getuser(),
+        return "%s\n%s %s %d %d %d %d %d \fmlib git sha: @VERSION@ git sha: @VERSION\n%s\n\n" % (getpass.getuser(),
                                                                                               inspect.stack()[-1][1],
                                                                                               self.img.file_name,
                                                                                               self.start_frame,

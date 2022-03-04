@@ -7,5 +7,5 @@ import numpy.ma as nma
 
 
 def apply_mask(piv_arr,mask_arr):
-    masked_vel = nma.masked_array(piv_arr,mask=~mask_arr.astype('bool'))
+    masked_vel = nma.masked_array(piv_arr,mask=mask_arr.astype('bool'))
     return masked_vel

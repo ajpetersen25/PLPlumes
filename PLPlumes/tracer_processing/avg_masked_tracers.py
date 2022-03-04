@@ -62,7 +62,7 @@ def main():
     parser.add_argument('img_file',type=str,help='.piv file you want to average')
     parser.add_argument('mask_file',type=str,help='.piv file you want to average')
     args = parser.parse_args()
-    masks = np.loadargs.mask_file)['arr_0']
+    masks = np.load(args.mask_file)['arr_0']
     threshold = 1
     window_threshold = 0.3
     piv = pivio.pivio(args.piv_file)

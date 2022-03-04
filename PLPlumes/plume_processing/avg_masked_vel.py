@@ -24,17 +24,17 @@ def average_masked_vel(piv):
     masks = []
     for f in range(0,piv.nt):
         piv_frame = piv.read_frame2d(f)
-        u.append(piv_frame[1])
-        v.append(piv_frame[2])
-        masks.append(piv_frame[0])
-    masks = np.array(masks).astype('bool')
-    masked_u = nma.masked_array(u,mask=~masks)
-    masked_v = nma.masked_array(v,mask=~masks)
+        u.append(((piv_frame[1])))
+        v.append(((piv_frame[2])))
+        masks.append((piv_frame[0]))
+    masks = ~np.array(masks).astype('bool')
+    masked_u = nma.masked_array(u,mask=masks)
+    masked_v = nma.masked_array(v,mask=masks)
 
 
     u_m_avg = nma.mean(masked_u,axis=0)
     v_m_avg = nma.mean(masked_v,axis=0)
-    return(np.flipud(~u_m_avg.mask),np.flipud(u_m_avg),np.flipud(v_m_avg))
+    return(np.flipud(np.mean((~masks).astype('float32'),axis=0)),np.flipud(u_m_avg),np.flipud(v_m_avg))
 
 def main():
     tic = time.time()

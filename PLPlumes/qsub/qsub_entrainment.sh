@@ -2,20 +2,20 @@
 # PIV cross-correlation code 
 if [[ $1 == '-h' ]]; then
 echo -e "\nusage: python plume_piv.py [-h]
-                     img_file piv_file dilation_kernel dilation_iter threshold med_filt_size
-                     start_frame end_frame orientation cores queue walltime pmem n_jobs
+                     img_file piv_file dilation_kernel threshold med_filt_size cutoff masking
+                     start_frame end_frame cores queue walltime pmem n_jobs
 
 positional arguments: (all are required)
   img_file              IMG filename containing bulk density values
   piv_file              PIV filename
   dilation_kernel
-  dilation_iter
   threshold             image intensity threshold
   med_filt_size
+  cutoff
+  masking           masking for piv or full entrainment calc
   start_frame           start frame for piv
   end_frame             end frame for piv
-  orientation           camera frame orientation
-  cores                 number of cores to use per job
+  cores
 
 
   queue         MSI queue name (recommended: small)
@@ -48,7 +48,7 @@ working_dir=`pwd`
 declare -i pairs_per_job
 declare -i pairs_last_job
 declare -i pairs
-pairs=$((${8} - ${7}))
+pairs=$((${9} - ${8}))
 pairs_per_job=$(($pairs/${14}))
 pairs_last_job=$(($pairs - $pairs_per_job * (${14}-1)))
 
@@ -65,13 +65,18 @@ pname=${pname[@]:0:$plen}
 #echo ${pairs} ${pairs_per_job} ${pairs_last_job}
 for ((i=0; i<${14}; i++)); do
 	# create symlinks for img file for each job to use
-	#fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
+	fname_i[$i]=$(printf '%s.c%04d.img' "$fname" "$i")
 	pname_i[$i]=$(printf '%s.c%04d.piv' "$pname" "$i")
-	pname_i_hdf5[$i]=$(printf '%s.c%04d.u_e.hdf5' "$pname" "$i")
+	#pname_i_hdf5[$i]=$(printf '%s.c%04d.u_e.hdf5' "$pname" "$i")
     if [ -f ${pname_i[$i]} ]; then
 		rm ${pname_i[$i]}
 	fi
 	ln -s $2 ${pname_i[$i]} 
+	
+	if [ -f ${fname_i[$i]} ]; then
+		rm ${fname_i[$i]}
+	fi
+	ln -s $1 ${fname_i[$i]} 
 
 	# specify start frame and end frame for each job
     start=$(($i * ${pairs_per_job} + ${7}))
@@ -80,8 +85,13 @@ for ((i=0; i<${14}; i++)); do
     else
         end=$((${start}+${pairs_per_job}))
     fi
-    #echo ${i} ${start} ${end} ${pname_i[$i]}
-    id[$i]=`qsub -q ${11} -l walltime=${12},nodes=1:ppn=${10},pmem=${13} -v img_file=${1},piv_file=${pname_i[$i]},dilation_kernel=${3},dilation_iter=${4},threshold=${5},med_filt_size=${6},start_frame=${start},end_frame=${end},orientation=${9},cores=${10} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/entrainment.sh`
+    echo ${i} ${start} ${end} ${pname_i[$i]} >> job_frames.txt
+    #id[$i]=`qsub -q ${11} -l walltime=${12},nodes=1:ppn=${10},pmem=${13} -v img_file=${1},piv_file=${pname_i[$i]},dilation_kernel=${3},threshold=${4},med_filt_size=${5},cutoff=${6},orientation=${7},start_frame=${start},end_frame=${end} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/entrainment.sh`
+    #ntasks={10}
+    idtemp=`sbatch --account=colettif --partition=${11} --time=${12} --ntasks=${10} --mem=${13} --chdir=$working_dir --output=out_files/slurm-%j.out --export=img_file=${fname_i[$i]},piv_file=${pname_i[$i]},dilation_kernel=${3},threshold=${4},med_filt_size=${5},cutoff=${6},masking=${7},start_frame=${start},end_frame=${end},cores=${10} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/entrainment.sh`
+	#echo -e "\rNum cores used ${10}"
+	idlen=${#idtemp}
+	id[$i]=${idtemp[@]:20:$idlen}
 done
 
 

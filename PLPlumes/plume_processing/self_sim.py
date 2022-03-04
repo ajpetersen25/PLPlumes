@@ -25,48 +25,71 @@ rc('text', usetex=True)
 from PLPlumes.plume_processing.plume_functions import windowed_average
 
 #%%
-upper_cal = 1/3475.93 #m/pix
-lower_cal = 1/3461.77 #m/pix
-upper_angle = .00809 # rad
-R = np.array([[np.cos(upper_angle),-np.sin(upper_angle)],[np.sin(upper_angle), np.cos(upper_angle)]])
-deltat = 1/(600) #s
+upper_cal = 1/3189 #m/pix
+lower_cal = 1/3168 #m/pix
+#upper_angle = .00809 # rad
+#R = np.array([[np.cos(upper_angle),-np.sin(upper_angle)],[np.sin(upper_angle), np.cos(upper_angle)]])
+deltat = 1/(500) #s
 D0 = 1.905e-2
 
-outlet = 130
-overlap = 0.6731 - 0.6270625 #m
+outlet = 255
+overlap = 0.7239 - 0.684213 #m
 #%% Plume dn32 files
-dn32_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper.rho_b.avg.img')
-dn32_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper2.rho_b.avg.img')
-dn32_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower.rho_b.avg.img')
-dn32_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower2.rho_b.avg.img')
+dn32_upper = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw1/cam1/cam1.avg.img')
+dn32_upper2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw2/cam1/cam1.avg.img')
+dn32_lower = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw1/cam2/cam2.avg.img')
+dn32_lower2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw2/cam2/cam2.avg.img')
+dn32_upper3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw3/cam1/cam1.avg.img')
+dn32_upper4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw4/cam1/cam1.avg.img')
+dn32_lower3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw3/cam2/cam2.avg.img')
+dn32_lower4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw4/cam2/cam2.avg.img')
 
-pivdn32_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper.0048.def.msk.ave.piv')
-pivdn32_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper2.0048.def.msk.ave.piv')
-pivdn32_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower.0048.def.msk.ave.piv')
-pivdn32_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower2.0048.def.msk.ave.piv')
-
+pivdn32_upper = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw1/cam1/cam1.0040.def.msk.ave.piv')
+pivdn32_upper2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw1/cam2/cam2.0040.def.msk.ave.piv')
+pivdn32_lower = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw2/cam1/cam1.0040.def.msk.ave.piv')
+pivdn32_lower2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw2/cam2/cam2.0040.def.msk.ave.piv')
+pivdn32_upper3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw3/cam1/cam1.0040.def.msk.ave.piv')
+pivdn32_upper4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw4/cam1/cam1.0040.def.msk.ave.piv')
+pivdn32_lower3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw3/cam2/cam2.0040.def.msk.ave.piv')
+pivdn32_lower4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn32/Raw4/cam2/cam2.0040.def.msk.ave.piv')
 
 #%% Plume bi_dn32 files
-bidn32_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper.rho_b.avg.img')
-bidn32_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper2.rho_b.avg.img')
-bidn32_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower.rho_b.avg.img')
-bidn32_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower2.rho_b.avg.img')
+bidn32_upper = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw1/cam1/cam1.avg.img')
+bidn32_upper2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw2/cam1/cam1.avg.img')
+bidn32_lower = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw1/cam2/cam2.avg.img')
+bidn32_lower2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw2/cam2/cam2.avg.img')
+bidn32_upper3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw3/cam1/cam1.avg.img')
+bidn32_upper4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw4/cam1/cam1.avg.img')
+bidn32_lower3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw3/cam2/cam2.avg.img')
+bidn32_lower4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw4/cam2/cam2.avg.img')
 
-pivbidn32_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper.0048.def.msk.ave.piv')
-pivbidn32_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper2.0048.def.msk.ave.piv')
-pivbidn32_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower.0048.def.msk.ave.piv')
-pivbidn32_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower2.0048.def.msk.ave.piv')
+pivbidn32_upper = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw1/cam1/cam1.0040.def.msk.ave.piv')
+pivbidn32_upper2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw1/cam2/cam2.0040.def.msk.ave.piv')
+pivbidn32_lower = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw2/cam1/cam1.0040.def.msk.ave.piv')
+pivbidn32_lower2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw2/cam2/cam2.0040.def.msk.ave.piv')
+pivbidn32_upper3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw3/cam1/cam1.0040.def.msk.ave.piv')
+pivbidn32_upper4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw4/cam1/cam1.0040.def.msk.ave.piv')
+pivbidn32_lower3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw3/cam2/cam2.0040.def.msk.ave.piv')
+pivbidn32_lower4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_bidn32/Raw4/cam2/cam2.0040.def.msk.ave.piv')
 
 #%% Plume dn45 files
-dn45_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper.rho_b.avg.img')
-dn45_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper2.rho_b.avg.img')
-dn45_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower.rho_b.avg.img')
-dn45_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower2.rho_b.avg.img')
+dn45_upper = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw1/cam1/cam1.avg.img')
+dn45_upper2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw2/cam1/cam1.avg.img')
+dn45_lower = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw1/cam2/cam2.avg.img')
+dn45_lower2 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw2/cam2/cam2.avg.img')
+dn45_upper3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw3/cam1/cam1.avg.img')
+dn45_upper4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw4/cam1/cam1.avg.img')
+dn45_lower3 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw3/cam2/cam2.avg.img')
+dn45_lower4 = imgio.imgio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw4/cam2/cam2.avg.img')
 
-pivdn45_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper.0048.def.msk.ave.piv')
-pivdn45_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper2.0048.def.msk.ave.piv')
-pivdn45_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower.0048.def.msk.ave.piv')
-pivdn45_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower2.0048.def.msk.ave.piv')
+pivdn45_upper = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw1/cam1/cam1.0040.def.msk.ave.piv')
+pivdn45_upper2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw1/cam2/cam2.0040.def.msk.ave.piv')
+pivdn45_lower = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw2/cam1/cam1.0040.def.msk.ave.piv')
+pivdn45_lower2 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw2/cam2/cam2.0040.def.msk.ave.piv')
+pivdn45_upper3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw3/cam1/cam1.0040.def.msk.ave.piv')
+pivdn45_upper4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw4/cam1/cam1.0040.def.msk.ave.piv')
+pivdn45_lower3 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw3/cam2/cam2.0040.def.msk.ave.piv')
+pivdn45_lower4 = pivio.pivio('/media/msi/pet00105/Coletti/Data_2020/whole_plume/Plume_dn45/Raw4/cam2/cam2.0040.def.msk.ave.piv')
 #%%
 dn32_upper_piv1 = pivdn32_upper.read_frame2d(0)
 dn32_upper_piv2 = pivdn32_upper2.read_frame2d(0)
@@ -269,6 +292,44 @@ yticks[0].label1.set_visible(False);
 #%% Self Similarity concentration
 # take concentration profiles at certain locations along streamwise distance of plume and fit Gaussian over
 # full width (views 1 & 2) or reflecting across half width. Then plot C/C_max vs r/r_1/2
+img1 = dn32_upper.read_frame2d(0)
+img2 = dn32_upper2.read_frame2d(0)
+img3 = dn32_upper3.read_frame2d(0)
+img4 = dn32_upper4.read_frame2d(0)
+dn32_upper_img = (img1+img2+img3+img4)/4
+z1 = (np.arange(0,2560)-outlet)*upper_cal/D0
+
+img1 = dn32_lower.read_frame2d(0)
+img2 = dn32_lower2.read_frame2d(0)
+img3 = dn32_lower3.read_frame2d(0)
+img4 = dn32_lower4.read_frame2d(0)
+dn32_lower_img = (img1+img2+img3+img4)/4
+z2 = ((np.arange(2560,2560*2)-outlet)*lower_cal-overlap)/D0
+
+img1 = bidn32_upper.read_frame2d(0)
+img2 = bidn32_upper2.read_frame2d(0)
+img3 = bidn32_upper3.read_frame2d(0)
+img4 = bidn32_upper4.read_frame2d(0)
+bidn32_upper_img = (img1+img2+img3+img4)/4
+
+img1 = bidn32_lower.read_frame2d(0)
+img2 = bidn32_lower2.read_frame2d(0)
+img3 = bidn32_lower3.read_frame2d(0)
+img4 = bidn32_lower4.read_frame2d(0)
+bidn32_lower_img = (img1+img2+img3+img4)/4
+
+img1 = dn45_upper.read_frame2d(0)
+img2 = dn45_upper2.read_frame2d(0)
+img3 = dn45_upper3.read_frame2d(0)
+img4 = dn45_upper4.read_frame2d(0)
+dn45_upper_img = (img1+img2+img3+img4)/4
+
+img1 = dn45_lower.read_frame2d(0)
+img2 = dn45_lower2.read_frame2d(0)
+img3 = dn45_lower3.read_frame2d(0)
+img4 = dn45_lower4.read_frame2d(0)
+dn45_lower_img = (img1+img2+img3+img4)/4
+
 z2 = ((np.arange(2560,2560*2)-outlet)*lower_cal-overlap)/D0
 
 f,ax  = plt.subplots(figsize=(5,5))
@@ -278,7 +339,7 @@ cNorm = colors.Normalize(vmin=0,vmax=75)
 scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
 #dn32 upper view
 prof_locs = np.arange(600,2500,200)
-c = (np.flipud(dn32_upper.read_frame2d(0))-1.225 + np.flipud(dn32_upper2.read_frame2d(0))-1.225)/2
+c = np.flipud(dn32_upper_img)
 rhalfs = []
 cmax_locs = []
 bin_s = 50
@@ -298,7 +359,7 @@ for p in prof_locs:
 
 #dn32 lower view
 prof_locs = np.arange(100,2500,200)
-c = (np.flipud(dn32_lower.read_frame2d(0))-1.225 + np.flipud(dn32_lower2.read_frame2d(0))-1.225)/2
+c = np.flipud(dn32_lower_img)
 rhalfs = []
 cmax_locs = []
 
@@ -324,7 +385,7 @@ ax.set_ylim(0,1.1);
 ax.set_xlim(0,3);
 yticks = ax.yaxis.get_major_ticks();
 yticks[0].label1.set_visible(False);
-f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_C_dn32.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
+f.savefig('/home/apetersen/Desktop/self_sim_C_P2.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
  
 
 
@@ -332,7 +393,7 @@ f,ax  = plt.subplots(figsize=(5,5))
 
 #bidn32 upper view
 prof_locs = np.arange(800,2500,200)
-c = (np.flipud(bidn32_upper.read_frame2d(0))-1.225 + np.flipud(bidn32_upper2.read_frame2d(0))-1.225)/2
+c = np.flipud(bidn32_upper_img)
 rhalfs = []
 cmax_locs = []
 bin_s = 50
@@ -352,7 +413,7 @@ for p in prof_locs:
 
 #bidn32 lower view
 prof_locs = np.arange(100,2500,200)
-c = (np.flipud(bidn32_lower.read_frame2d(0))-1.225 + np.flipud(bidn32_lower2.read_frame2d(0))-1.225)/2
+c = np.flipud(bidn32_lower_img)
 rhalfs = []
 cmax_locs = []
 
@@ -378,7 +439,7 @@ ax.set_ylim(0,1.1);
 ax.set_xlim(0,3);
 yticks = ax.yaxis.get_major_ticks();
 yticks[0].label1.set_visible(False);
-f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_C_bidn32.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
+f.savefig('/home/apetersen/Desktop/self_sim_C_P1.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
  
 
 
@@ -387,7 +448,7 @@ f,ax  = plt.subplots(figsize=(5,5))
 
 #dn45 upper view
 prof_locs = np.arange(600,2500,200)
-c = (np.flipud(dn45_upper.read_frame2d(0))-1.225 + np.flipud(dn45_upper2.read_frame2d(0))-1.225)/2
+c = np.flipud(dn45_upper_img)
 rhalfs = []
 cmax_locs = []
 bin_s = 50
@@ -407,8 +468,7 @@ for p in prof_locs:
 
 #dn45 lower view
 prof_locs = np.arange(100,2500,200)
-c = (np.flipud(dn45_lower.read_frame2d(0))-1.225 + np.flipud(dn45_lower2.read_frame2d(0))-1.225)/2
-rhalfs = []
+c = np.flipud(dn45_lower_img)
 cmax_locs = []
 
 hs = z2
@@ -433,5 +493,5 @@ ax.set_ylim(0,1.1);
 ax.set_xlim(0,3);
 yticks = ax.yaxis.get_major_ticks();
 yticks[0].label1.set_visible(False);
-f.savefig('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/figures/self_sim_C_dn45.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
+f.savefig('/home/apetersen/Desktop/self_sim_C_P3.pdf',dpi=1200,format='pdf',bbox_extra_artists=[xlab,ylab], bbox_inches='tight')
  

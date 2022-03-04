@@ -115,10 +115,10 @@ D0 = 1.905e-2
 
 outlet = 130
 overlap = 0.6731 - 0.6270625 #m
-pivdn32_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper.0048.def.msk.ave.piv')
-pivdn32_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper2.0048.def.msk.ave.piv')
-pivdn32_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower.0048.def.msk.ave.piv')
-pivdn32_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower2.0048.def.msk.ave.piv')
+pivdn32_upper = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper.0048.def.msk.ave.piv')
+pivdn32_upper2 = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper2.0048.def.msk.ave.piv')
+pivdn32_lower = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower.0048.def.msk.ave.piv')
+pivdn32_lower2 = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower2.0048.def.msk.ave.piv')
 
 dn32_upper_piv1 = pivdn32_upper.read_frame2d(0)
 dn32_upper_piv2 = pivdn32_upper2.read_frame2d(0)

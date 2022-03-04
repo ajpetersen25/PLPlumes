@@ -63,33 +63,34 @@ D0 = 1.905e-2
 outlet = 130
 overlap = 0.6731 - 0.6270625 #m
 #%% Plume dn32 files
-dn32_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper.rho_b.avg.img')
-dn32_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper2.rho_b.avg.img')
-dn32_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower.rho_b.avg.img')
-dn32_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower2.rho_b.avg.img')
+dn32_upper = imgio.imgio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper.avg.img')
+dn32_upper2 = imgio.imgio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper2.avg.img')
+dn32_lower = imgio.imgio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower.avg.img')
+dn32_lower2 = imgio.imgio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower2.avg.img')
 
-pivdn32_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper.0048.def.msk.ave.piv')
-pivdn32_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/upper/dn32_upper2.0048.def.msk.ave.piv')
-pivdn32_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower.0048.def.msk.ave.piv')
-pivdn32_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn32/whole_plume/lower/dn32_lower2.0048.def.msk.ave.piv')
+pivdn32_upper = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper.0048.def.msk.ave.piv')
+pivdn32_upper2 = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/upper/dn32_upper2.0048.def.msk.ave.piv')
+pivdn32_lower = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower.0048.def.msk.ave.piv')
+pivdn32_lower2 = pivio.pivio('/media/apetersen/Backup2/Plume_dn32/whole_plume/lower/dn32_lower2.0048.def.msk.ave.piv')
 
 
 #%% Plume bi_dn32 files
-bidn32_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper.rho_b.avg.img')
-bidn32_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper2.rho_b.avg.img')
-bidn32_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower.rho_b.avg.img')
-bidn32_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower2.rho_b.avg.img')
+bidn32_upper = imgio.imgio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/upper/bidn32_upper.avg.img')
+bidn32_upper2 = imgio.imgio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/upper/bidn32_upper2.avg.img')
+bidn32_lower = imgio.imgio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/lower/bidn32_lower.avg.img')
+bidn32_lower2 = imgio.imgio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/lower/bidn32_lower2.avg.img')
 
-pivbidn32_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper.0048.def.msk.ave.piv')
-pivbidn32_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/upper/bidn32_upper2.0048.def.msk.ave.piv')
-pivbidn32_lower = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower.0048.def.msk.ave.piv')
-pivbidn32_lower2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_bi_dn32/whole_plume/lower/bidn32_lower2.0048.def.msk.ave.piv')
+bipivdn32_upper = pivio.pivio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/upper/bidn32_upper.0048.def.msk.ave.piv')
+bipivdn32_upper2 = pivio.pivio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/upper/bidn32_upper2.0048.def.msk.ave.piv')
+bipivdn32_lower = pivio.pivio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/lower/bidn32_lower.0048.def.msk.ave.piv')
+bipivdn32_lower2 = pivio.pivio('/media/apetersen/Backup2/Plume_bidn32/whole_plume/lower/bidn32_lower2.0048.def.msk.ave.piv')
+
 
 #%% Plume dn45 files
-dn45_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper.rho_b.avg.img')
-dn45_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper2.rho_b.avg.img')
-dn45_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower.rho_b.avg.img')
-dn45_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower2.rho_b.avg.img')
+dn45_upper = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper.avg.img')
+dn45_upper2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper2.avg.img')
+dn45_lower = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower.avg.img')
+dn45_lower2 = imgio.imgio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/lower/dn45_lower2.avg.img')
 
 pivdn45_upper = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper.0048.def.msk.ave.piv')
 pivdn45_upper2 = pivio.pivio('/media/cluster/msi/pet00105/Coletti/Data_2020/Plumes/Plume_dn45/whole_plume/upper/dn45_upper2.0048.def.msk.ave.piv')
@@ -198,12 +199,12 @@ alpha = 0.042
 liu_bidn32 = liu_model(wp_0,wf_0,rho_to_phi(rhob_0,rho_p,rho_f),rho_p,rho_f,r0,r0,dp,mu_f,alpha,mfr,z)
 
 mfr = 3e-3 #g/s
-rhob_0 = 68#46.7*1.225/1.5
+rhob_0 = 11.5#68#46.7*1.225/1.5
 wp_0 = mfr/(rhob_0*np.pi*r0**2)
-wf_0 = wp_0-w0/2
+wf_0 = wp_0-w0
 bf_0 = r0
 alpha = 0.044
-liu_dn32 = liu_model(wp_0,wf_0,2*rho_to_phi(rhob_0,rho_p,rho_f),rho_p,rho_f,r0,r0,dp,mu_f,alpha,mfr,z)
+liu_dn32 = liu_model(wp_0,wf_0,rho_to_phi(rhob_0,rho_p,rho_f),rho_p,rho_f,r0,r0,dp,mu_f,alpha,mfr,z)
 
 mfr = 8e-3 #g/s
 rhob_0 = 128#93.2
@@ -460,13 +461,14 @@ zpiv2a = ((np.linspace(2560,2*2560,dn45_lower_piv2[1].shape[1])-outlet)*lower_ca
 
 
 #%% Centerline Vertical Velocity
+start = 1
 tau_p = 7.4e-3
 w0 = tau_p*9.81
 f,ax  = plt.subplots(figsize=(6,10))
 cs = plt.get_cmap('inferno')
 cNorm = colors.Normalize(vmin=0,vmax=(z2[-1]/D0))
 scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cs)
-#fc,axc = plt.subplots(1,3,figsize=(18,10),sharey=True)
+fc,axc = plt.subplots(1,3,figsize=(18,10),sharey=True)
 d = 5
 dn32_centerline1 = np.zeros(np.arange(0,dn32_upper_piv1[1].shape[1]).shape).astype('int')
 W1 = ((dn32_upper_piv2[1]*R[0,0] - dn32_upper_piv2[2]*R[0,1]) +(dn32_upper_piv2[1]*R[0,0] - dn32_upper_piv2[2]*R[0,1]))/2
@@ -474,11 +476,11 @@ for p in range(0,dn32_upper_piv1[1].shape[1]):
     w_prof = W1[:,p]
     dn32_centerline1[p] = int(np.where(w_prof == np.max(w_prof))[0][0])
 #centerline1[:] = 36
-ax.plot(windowed_average(np.mean(W1[20:22,np.where(zpiv1>5)[0].astype('int')],axis=0)[:-1],10)[::d]*upper_cal/deltat/w0,zpiv1[zpiv1>5][:-1][::d],'o',linewidth=4,color=cs(100))
+ax.plot(windowed_average(np.mean(W1[20:22,np.where(zpiv1>start)[0].astype('int')],axis=0)[:-1],10)[::d]*upper_cal/deltat/w0,zpiv1[zpiv1>start][:-1][::d],'o',linewidth=4,color=cs(100))
 #axc[1].plot(windowed_average(np.mean(W1[20:22,np.where(zpiv1>5)[0].astype('int')],axis=0)[:-1],10)[::d]*upper_cal/deltat/w0,zpiv1[zpiv1>5][:-1][::d],'o',linewidth=4,color=cs(100))
 w1_p2 = windowed_average(np.mean(W1[20:22,15:],axis=0)[:-1],10)*upper_cal/deltat
 #ax.plot(w1_p2[::d]/w0,zpiv1[15:-1][::d],'o',linewidth=4,color=cs(100))
-#axc[1].plot(w1_p2[::d]/.31,zpiv1[15:-1][::d],'o',linewidth=4,color=cs(100))
+axc[1].plot(w1_p2[::d]/.31,zpiv1[15:-1][::d],'o',linewidth=4,color=cs(100))
 
 dn32_centerline2 = np.zeros(np.arange(0,dn32_upper_piv1[1].shape[1]).shape).astype('int')
 W2 = (dn32_lower_piv1[1] + dn32_lower_piv2[1])/2
@@ -489,18 +491,18 @@ for p in range(0,dn32_lower_piv1[1].shape[1]):
 #axc[1].plot(windowed_average(W2[[r for r in dn32_centerline2],[c for c in range(0,pivdn32_lower2.nx)]][1:-1],10)[::d]*lower_cal/deltat/w0,zpiv2[1:-1][::d],'o',linewidth=4,color=cs(100))
 w2_p2 = windowed_average(np.mean(W2[20:22,:],axis=0)[:-1],10)*lower_cal/deltat
 ax.plot(w2_p2[::d]/w0,zpiv2[:-1][::d],'o',linewidth=4,color=cs(100))
-#axc[1].plot(w2_p2[::d]/.31,zpiv2[:-1][::d],'o',linewidth=4,color=cs(100))
+axc[1].plot(w2_p2[::d]/.31,zpiv2[:-1][::d],'o',linewidth=4,color=cs(100))
 
-x = np.hstack((zpiv1[15:-1][zpiv1[15:-1]>5],zpiv2[:-1][zpiv2[:-1]<65]))
-y = np.hstack((w1_p2[zpiv1[15:-1]>5],w2_p2[zpiv2[:-1]<65]))
-fit_dn32 = curve_fit_log(x,y)
+#x = np.hstack((zpiv1[15:-1][zpiv1[15:-1]>start],zpiv2[:-1][zpiv2[:-1]<65]))
+#y = np.hstack((w1_p2[zpiv1[15:-1]>start],w2_p2[zpiv2[:-1]<65]))
+#fit_dn32 = curve_fit_log(x,y)
 #ax.loglog(np.power(1300,linlaw(np.log10(np.arange(10,65)),*fit_dn32[0])),np.arange(10,65),'--',color=cs(100))
 #ax.loglog(np.power(10,linlaw(np.log10(np.arange(10,50)),*fit_dn32[0])),np.arange(10,50),'--',color=cs(100))
 
 #axc[1].plot(2*lazy_dn32[1]/.31,z/D0,'--',color='k',linewidth=2)
 #axc[1].plot(2*forced_dn32[1]/.31,z/D0,'-.',color='k',linewidth=2)
 #axc[1].plot(2*pure_dn32[2]/.31,z/D0,'-',color='k',linewidth=2)
-#axc[1].plot(liu_dn32[0]/.31+.5,z/D0,':',color='k',linewidth=2)
+axc[1].plot(liu_dn32[0]/.31,z/D0,':',color='k',linewidth=2)
 
 bidn32_centerline1 = np.zeros(np.arange(0,dn32_upper_piv1[1].shape[1]).shape).astype('int')
 W1 = ((bidn32_upper_piv1[1]*R[0,0] - bidn32_upper_piv1[2]*R[0,1]) +(bidn32_upper_piv2[1]*R[0,0] - bidn32_upper_piv2[2]*R[0,1]))/2
@@ -530,8 +532,8 @@ axc[0].plot(w2_p1[:-1][::d]/.69,zpiv2[:-1][::d],'o',linewidth=4,color=cs(0))
 #axc[0].plot(2*pure_bidn32[2]/.69,z/D0,'-',color='k',linewidth=2)
 #axc[0].plot(liu_bidn32[0]/.69+.5,z/D0,':',color='k',linewidth=2)
 
-x = np.hstack((zpiv1[15:][zpiv1[15:]>5],zpiv2[zpiv2[:]<65]))
-y = np.hstack((w1_p1[zpiv1[15:]>5],w2_p1[zpiv2[:]<65]))
+x = np.hstack((zpiv1[15:][zpiv1[15:]>start],zpiv2[zpiv2[:]<65]))
+y = np.hstack((w1_p1[zpiv1[15:]>start],w2_p1[zpiv2[:]<65]))
 fit_bidn32 = curve_fit_log(x,y)
 #ax.loglog(np.power(10,linlaw(np.log10(np.arange(10,65)),*fit_bidn32[0])),np.arange(10,65),'--',color=cs(0))
 

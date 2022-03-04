@@ -16,6 +16,24 @@ def nextpow2(i):
         n *= 2
     return n
 
+def curvature(z,r,interface_pts):
+    s = [np.sum(np.linalg.norm(np.diff(interface_pts[::-1],axis=0),axis=1)[0:i]) for i in range(0,len(interface_pts[:,0]))]
+    dxds = np.gradient(z,s)
+    drds2 = np.gradient(np.gradient(r,s),s)
+    drds = np.gradient(r,s)
+    dxds2 = np.gradient(np.gradient(z,s),s)
+    k = (dxds*drds2 - drds*dxds2) / (dxds**2+drds**2)
+    return k
+
+def orientation(n,comp_vector,deg_or_rad='degrees'):
+    """ n vectors you want to compare to some direction
+        comp_vector -- vector you want to compare other vectors to
+        deg_or_rad -- degrees or radians """
+    dot_product = np.dot(n,comp_vector)
+    if deg_or_rad == 'radians':
+        return(np.arccos(dot_product))
+    elif deg_or_rad == 'degrees':
+        return(np.arccos(dot_product)*180/np.pi)
 
 def esd1d(signal, freq, windows, overlap=0.5):
     """ calculate the energy spectrum density of a signal--

@@ -39,11 +39,11 @@ def lai_model(z,bf_0,bp_0,wf_0,ws_0,phi_v0,dp,rho_p,rho_f,mu_f=1.825e-5):
     for i in range(0,len(z)-1):        
         i=i+1
         step_size = abs(z[i]-z[i-1])
-        Rep = rho_f*(ws[0])*dp/mu_f
+        Rep = rho_f*abs(ws[i-1])*dp/mu_f
         Cd = 24/Rep * (1+0.15*Rep**(.687))
         bf[i] = bf[i-1] + 0.11*step_size
         bp[i] = bp[i-1] + 0.11*u_avg[i-1]/(u_avg[i-1]+ws[i-1])*step_size
-        
+        L = bp/bf
         #phi_v[i] = Qp[0]/(np.pi*rho_p*bp[i]**2) * 1/(wf[i-1]*1/(1+(bp[i]/bf[i])**2) + ws[i-1])
     
         #phi_v[i] = (2*bp[0])**2*wp[0]*phi_v[0]/(4*bp[i]**2) * (wf[i-1]*1/(1+(bp[i]/bf[i])**2) + ws[i-1])**(-1)
@@ -51,6 +51,7 @@ def lai_model(z,bf_0,bp_0,wf_0,ws_0,phi_v0,dp,rho_p,rho_f,mu_f=1.825e-5):
         Mp[i] = Mp[i-1] + step_size * (np.pi*bp[i-1]**2*phi_v[i-1]*((rho_p-rho_f)*g - 3*rho_f*Cd*ws[i-1]**2/(8*dp/2)))
         Mf[i] = Mf[i-1] + step_size * (np.pi*bp[i-1]**2*phi_v[i-1]*3*rho_f*Cd*ws[i-1]**2/(4*dp))
         #phi_v[i] = Qp[0]/(rho_p*np.pi*bp[i]**2) * ((wf[i-1]/(1+(bp[i]/bf[i]**2)) +ws[i-1])**(-1))
+        
         def equations(p):
             g = 9.81
             tau_p = 7.4e-3

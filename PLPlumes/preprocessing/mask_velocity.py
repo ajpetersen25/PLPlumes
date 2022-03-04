@@ -35,11 +35,27 @@ def mask_vframe(params):
     img,piv,threshold,window_threshold,slices,frame = params
     # read image frame from .img file
     step = (piv.dy/2,piv.dx/2)
-    img_frame = img.read_frame2d(frame)
+    img_frame = img.read_frame2d(frame+1)
     # initialize mask frame
     mask = piv.read_frame2d(frame)[0]
-    mask[mask==4]=1
+    mask[mask==4]=0
     mask[mask!=1]=0
+    
+    for s in slices:
+        window = img_frame[s]
+        if np.sum(window)/(step[0]*step[1]) > window_threshold: #and mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] ==1:
+            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)] = 1
+        else:
+            mask[int((s[0].start+piv.dy/2)/(piv.dy)-1),int((s[1].start+piv.dx/2)/(piv.dx)-1)]  = 0
+            
+    mask[:,0]=1
+    mask[:,mask.shape[1]-1]=1
+    mask[mask.shape[0]-1,:]=1
+    mask[0,:]=1
+    
+    return((np.flipud(~mask.astype('bool'))))
+    """
+    
     # loop through all interrogation windows, looking at which meet threshold criteria
     # elements in the frame mask array which meet this criteria are set to 0
 
@@ -54,7 +70,7 @@ def mask_vframe(params):
     #        if piv.read_frame2d(0)[1][r,c] < 1:
     #            mask[r,c] = 0
 
-    return(np.flipud(mask))
+    return(np.flipud(mask))"""
 
 
 def main():

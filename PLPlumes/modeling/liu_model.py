@@ -49,7 +49,8 @@ def liu_model(w_p0,w_a0,beta_0,rho_p,rho_a,ra_0,rp_0,dp,mu_a,alpha,mfr,z):
 
         rp[i] = rp[i-1] + np.diff(ra)[i-1]*wa[i-1]/wp[i-1]
         rhob[i] = mp_dot[0]/(wp[i]*np.pi*rp[i]**2) + rho_a
-        C[i] = ((rho_p-rhob[i])/(rho_p-rho_a))**(-4.7)
+        
         beta[i] = 1-((rho_p-rhob[i])/(rho_p-rho_a))
+        C[i] = ((rho_p-rhob[i])/(rho_p-rho_a))**(-4.7)
         mp_dot[i] = np.pi*(rp[i])**2*rho_p*(wp[i])*(beta[i])
     return(wp,wa,Qa,Ma,ra,rp,rhob,mp_dot)

@@ -67,46 +67,53 @@ for ((i=0; i<${13}; i++)); do
         end=$((${start}+${pairs_per_job}))
     fi
     #echo ${i} ${start} ${end} ${fname_i_tracers[$i]} 
-    id[$i]=`qsub -q ${10} -l walltime=${11},nodes=1:ppn=${9},pmem=${12} -v img_file=${fname_i[$i]},labeling_threshold=${2},particle_threshold=${3},min_size=${4},particle_flare=${5},window_size=${6},start_frame=${start},end_frame=${end},cores=${9} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/separate.sh`
+    #id[$i]=`qsub -q ${10} -l walltime=${11},nodes=1:ppn=${9},pmem=${12} -v img_file=${fname_i[$i]},labeling_threshold=${2},particle_threshold=${3},min_size=${4},particle_flare=${5},window_size=${6},start_frame=${start},end_frame=${end},cores=${9} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/separate.sh`
+    
+    idtemp=`sbatch --account=colettif --partition=${10} --time=${11} --ntasks=${9} --mem=${12} --chdir=$working_dir --output=slurm-%j.out --export=img_file=${fname_i[$i]},labeling_threshold=${2},particle_threshold=${3},min_size=${4},particle_flare=${5},window_size=${6},start_frame=${start},end_frame=${end},cores=${9} /home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/qsub/separate.sh`
+	
+	idlen=${#idtemp}
+	id[$i]=${idtemp[@]:20:$idlen}
+	
+	
 done
 
 # ----------------- wait for jobs to finish --------------------
 
-shopt -s expand_aliases
-sleep_time=30 # seconds
-me=`whoami`
-alias myqstat='qstat | grep $me'
+#shopt -s expand_aliases
+#sleep_time=30 # seconds
+#me=`whoami`
+#alias mysqueue='squeue | grep $me'
 
-# count number of jobs complete
-no_complete=0
-for ((i=0; i<${13}; i++)); do
-	jobstate=`myqstat | grep ${id[$i]}` # check job status
-	status=`echo $jobstate | awk -F' ' '{print $5}'`
-	if [ "$status" == "C" ]; then
-                ((no_complete++))
-        fi
-done
-counter=0
-aniwait=("|" "/" "-" "\\")
-echo -n ${aniwait[$counter]}
+# count number of jobs still running
+#no_running=${13}
+#for ((i=0; i<${13}; i++)); do
+#	jobstate=`mysqueue | grep ${id[$i]}` # check job status
+#	if [ -z "$jobstate" ]; then # check if jobstate is empty
+#                ((no_running--))
+#        fi
+#done
+#counter=0
+#aniwait=("|" "/" "-" "\\")
+#echo -n ${aniwait[$counter]}
 
-while [ $no_complete -lt ${13} ]; do  # while not all jobs are complete
-	no_complete=0
-	for ((i=0; i<${13}; i++)); do
-        	jobstate=`myqstat | grep ${id[$i]}` # check job status
-		status=`echo $jobstate | awk -F' ' '{print $5}'`
-		if [ "$status" == "C" ]; then
-                	((no_complete++))
-        	fi
-	done
+#while [ $no_running -gt 0 ]; do  # while jobs are still running
+#	no_running=${13}
+#	for ((i=0; i<${13}; i++)); do
+#        	jobstate=`mysqueue | grep ${id[$i]}` # check job status
+#		if [ -z "$jobstate" ]; then # check if jobstate is empty
+#                	((no_running--))
+#        	fi
+#	done
 
-	sleep $sleep_time
-	((counter++))
-	echo -n -e "\r${aniwait[$counter%4]}"
-done
-echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
+#	sleep $sleep_time
+#	((counter++))
+#	echo -n -e "\r${aniwait[$counter%4]}"
+#done
+#echo -e "\rFINISHED in $(($counter*$sleep_time)) seconds"
+
+
 
 # ----------------------- clean up ------------------------
 
 # join img files
-/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/merge_imgs.py $(printf '%s.tracers.img' "$fname") ${fname_i_tracers[*]}
+#/home/colettif/pet00105/Coletti/PLPlumes/PLPlumes/pio/merge_imgs.py $(printf '%s.tracers.img' "$fname") ${fname_i_tracers[*]}
